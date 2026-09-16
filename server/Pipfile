@@ -5,9 +5,17 @@ name = "pypi"
 
 [packages]
 flask = "*"
-flask-jwt-extended = "*"
+flask-sqlalchemy = "*"
 marshmallow = "*"
-sqlalchemy = "*"
+faker = "*"
+flask-migrate = "*"
+flask-restful = "*"
+importlib-metadata = "*"
+importlib-resources = "*"
+pytest = "*"
+flask-bcrypt = "*"
+flask-jwt-extended = "*"
+werkzeug = "*"
 
 [dev-packages]
 
