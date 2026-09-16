@@ -1,7 +1,10 @@
-from flask import Flask
+from flask import request, make_response, jsonify, redirect, url_for
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, create_access_token
+from flask_restful import Resource
+from sqlalchemy.exc import IntegrityError
 
-app = Flask(__name__)
-
+from config import app, db, api
+from models import *
 
 @app.route('/')
 def index():
