@@ -4,6 +4,7 @@ from marshmallow import Schema, fields
 
 from config import db, bcrypt
 
+
 class User(db.Model):
     __tablename__ = "users"
 
@@ -14,9 +15,7 @@ class User(db.Model):
     projects = db.relationship(
         "Project", back_populates="user", cascade="all, delete-orphan"
     )
-    parts = db.relationship(
-        "Part", back_populates="user", cascade="all, delete-orphan"
-    )
+    parts = db.relationship("Part", back_populates="user", cascade="all, delete-orphan")
 
     @hybrid_property
     def password_hash(self):
@@ -37,8 +36,10 @@ class User(db.Model):
 class UserSchema(Schema):
     id = fields.Int()
     username = fields.String()
-    projects = fields.List(fields.Nested(lambda: ProjectSchema(exclude=("user",))))
-    parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("user",))))
+    projects = fields.List(
+        fields.Nested(lambda: ProjectSchema(exclude=("user", "tasks")))
+    )
+    parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("user", "tasks"))))
 
 
 class Project(db.Model):
@@ -60,7 +61,7 @@ class ProjectSchema(Schema):
     name = fields.String()
     description = fields.String()
 
-    user = fields.Nested(lambda: UserSchema(exclude=("projects",)))
+    user = fields.Nested(lambda: UserSchema(exclude=("projects", "parts")))
     tasks = fields.List(fields.Nested(lambda: TaskSchema(exclude=("project",))))
 
 
@@ -74,7 +75,11 @@ class Task(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
 
     project = db.relationship("Project", back_populates="tasks")
-    parts = db.relationship("Part", back_populates="task", cascade="all, delete-orphan")
+    parts = db.relationship(
+        "Part",
+        secondary="task_parts",
+        back_populates="tasks",
+    )
 
 
 class TaskSchema(Schema):
@@ -84,7 +89,7 @@ class TaskSchema(Schema):
     time = fields.String()
 
     project = fields.Nested(lambda: ProjectSchema(exclude=("tasks",)))
-    parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("task",))))
+    parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("tasks", "user"))))
 
 
 class Part(db.Model):
@@ -97,11 +102,10 @@ class Part(db.Model):
     amount_required = db.Column(db.Integer)
     amount_owned = db.Column(db.Integer)
     source = db.Column(db.String)
-    task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"))
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    user = db.relationship('User',back_populates="parts")
-    task = db.relationship('Task',back_populates="parts")
+    user = db.relationship("User", back_populates="parts")
+    tasks = db.relationship("Task", secondary="task_parts", back_populates="parts")
 
 
 class PartSchema(Schema):
@@ -113,5 +117,12 @@ class PartSchema(Schema):
     amount_owned = fields.Int()
     source = fields.String()
 
-    task = fields.Nested(lambda: TaskSchema(exclude=("parts",)))
-    user = fields.Nested(lambda: UserSchema(exclude=("tasks",)))
+    tasks = fields.List(fields.Nested(lambda: TaskSchema(exclude=("parts",))))
+    user = fields.Nested(lambda: UserSchema(exclude=("parts", "projects")))
+
+
+class TaskParts(db.Model):
+    __tablename__ = "task_parts"
+
+    task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"), primary_key=True)
+    part_id = db.Column(db.Integer, db.ForeignKey("parts.id"), primary_key=True)
