@@ -1,26 +1,39 @@
-import { useState } from 'react'
-import AppBar from '@mui/material/AppBar';
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import { Outlet } from 'react-router';
+import { useEffect, useState } from "react";
+import AppBar from "@mui/material/AppBar";
+import "./App.css";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import {  Outlet, useNavigate } from "react-router";
+import useFetch from "./common/utils/useFetch";
+import Button from "@mui/material/Button";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [user, setUser] = useState(null);
+  const { response: session, loading: sessionLoading } = useFetch("me");
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (session) {
+      setUser(session.username)
+    }
+  }, [session]);
 
   return (
     <>
-      <AppBar position='static'>
+      <AppBar position="static">
         <Toolbar>
-          <Typography variant='h1' sx={{flexGrow:1}}>DIY Tracker</Typography>
+          <Typography variant="h1" sx={{ flexGrow: 1 }}>
+            DIY Tracker
+          </Typography>
+          <Button onClick={() => {localStorage.removeItem("token");navigate('/')}}>
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
-      <Outlet/>
+      <Outlet context={{ setUser, user, sessionLoading, session }} />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
