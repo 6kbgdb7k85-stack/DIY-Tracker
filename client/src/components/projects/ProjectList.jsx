@@ -42,6 +42,18 @@ function ProjectList() {
 	}
   },[projectsResponse])
 
+  useEffect(()=>{
+	if(updateProjectResponse){
+		setProjects(prevState=>(prevState.map(project=>{
+			if(project.id==updateProjectResponse.id){
+				return updateProjectResponse
+			}else{
+				return project
+			}
+		})))
+	}
+  },[updateProjectResponse])
+
   function handlePagination(){
 	console.log(pagination)
   }

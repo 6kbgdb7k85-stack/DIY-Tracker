@@ -44,7 +44,7 @@ def check_resource_ownership():
         user_id = get_jwt_identity()
         user = User.query.filter(User.id == user_id).first()
         # endpoint of format parent_child can be used to get auth based on the parent resource
-        resource_name=request.endpoint.split('_')[0]
+        resource_name = request.endpoint.split("_")[0]
         # route id params must be formatted as {resource}_id
         entity_id = request.view_args.get(f"{resource_name}_id")
         resource = user_owned_resources.get(resource_name, None)
@@ -314,6 +314,7 @@ class ToolList(Resource):
             pagination = (
                 Tool.query.join(Tool.tasks)
                 .filter(Task.project_id == project_id)
+                .distinct()
                 .paginate(page=page, per_page=per_page, error_out=False)
             )
         else:
@@ -332,6 +333,26 @@ class ToolList(Resource):
             },
             200,
         )
+
+
+class ToolView(Resource):
+    def get(
+        self,
+        tool_id,
+        project_id=None,
+        task_id=None,
+    ):
+        tool = Tool.query.filter(Tool.id == tool_id).first()
+        return make_response(ToolSchema().dump(tool), 200)
+
+    def delete(self, tool_id, project_id=None, task_id=None):
+        tool = Tool.query.filter(Tool.id == tool_id).first()
+        try:
+            db.session.delete(tool)
+            db.session.commit()
+            return make_response({}, 204)
+        except Exception as e:
+            return make_response({"error": "500 Server Error"})
 
 
 api.add_resource(Login, "/login", endpoint="login")
@@ -364,6 +385,12 @@ api.add_resource(
     "/projects/<int:project_id>/tasks/<int:task_id>/tools",
     "/projects/<int:project_id>/tools",
     endpoint="project_tools",
+)
+api.add_resource(
+    ToolView,
+    "/projects/<int:project_id>/tasks/<int:task_id>/tools/<int:tool_id>",
+    "/tools/<int:tool_id>",
+    endpoint="tool",
 )
 
 if __name__ == "__main__":

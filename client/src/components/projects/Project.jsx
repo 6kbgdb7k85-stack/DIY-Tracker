@@ -9,6 +9,8 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import TableWrapper from "../../common/components/Table/TableWrapper";
 import { PROJECT_TASKS_COLUMNS } from "./projectConstants";
+import PartsTable from "../parts/PartsTable";
+import ToolsTable from "../tools/ToolsTable";
 
 function Project() {
   const { projectId } = useParams();
@@ -38,7 +40,7 @@ function Project() {
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="h4">Parts</Typography>
               </AccordionSummary>
-              <AccordionDetails>Parts Table</AccordionDetails>
+              <AccordionDetails><PartsTable/></AccordionDetails>
             </Accordion>
           </Grid>
           <Grid size={6}>
@@ -46,7 +48,7 @@ function Project() {
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="h4">Tools</Typography>
               </AccordionSummary>
-              <AccordionDetails>Tools Table</AccordionDetails>
+              <AccordionDetails><ToolsTable/></AccordionDetails>
             </Accordion>
           </Grid>
         </Grid>
