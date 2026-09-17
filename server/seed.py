@@ -16,7 +16,7 @@ with app.app_context():
     demo_task=Task(name="Replace Seals",description="Replace weather strips",project=demo_project)
     demo_project.tasks.append(demo_task)
 
-    demo_part=Part(name="Weather Strip Kit",part_type="Consumable",amount_required=1,amount_owned=0,source="DeLorean Midwest", cost=200,task=demo_task, user=demo_user)
+    demo_part=Part(name="Weather Strip Kit",part_type="Consumable",amount_required=1,amount_owned=0,source="DeLorean Midwest", cost=200, user=demo_user)
     demo_user.parts.append(demo_part)
     demo_task.parts.append(demo_part)
 
