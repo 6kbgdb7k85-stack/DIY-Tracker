@@ -21,22 +21,33 @@ def check_logged_in():
 
 @app.before_request
 def check_resource_ownership():
-    # routes holding user owned resources
-    user_owned_routes = ["project", "task", "part", "tool"]
+    # endpoints holding user owned resources
+    user_owned_endpoints = [
+        "project",
+        "project_task",
+        "project_part",
+        "tool",
+        "project_parts",
+        "project_tools",
+        "project_tasks",
+    ]
     # resource classes to use based on endpoint
     user_owned_resources = {
         "project": Project,
         "task": Task,
         "part": Part,
         "tool": Tool,
+        "tasks": Project,
     }
 
-    if request.endpoint in user_owned_routes:
+    if request.endpoint in user_owned_endpoints:
         user_id = get_jwt_identity()
         user = User.query.filter(User.id == user_id).first()
+        # endpoint of format parent_child can be used to get auth based on the parent resource
+        resource_name=request.endpoint.split('_')[0]
         # route id params must be formatted as {resource}_id
-        entity_id = request.view_args.get(f"{request.endpoint}_id")
-        resource = user_owned_resources.get(request.endpoint, None)
+        entity_id = request.view_args.get(f"{resource_name}_id")
+        resource = user_owned_resources.get(resource_name, None)
         # make sure route params match existing resources
         if not resource or not entity_id:
             return make_response({"error": "400 Bad Request"}, 400)
@@ -225,9 +236,16 @@ class PartList(Resource):
     def get(self, project_id, task_id=None):
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 5, type=int)
-        pagination = Part.query.filter(Part.task_id == task_id).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        if task_id:
+            pagination = Part.query.filter(Part.task_id == task_id).paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+        else:
+            pagination = (
+                Part.query.join(Part.task)
+                .filter(Task.project_id == project_id)
+                .paginate(page=page, per_page=per_page, error_out=False)
+            )
         parts = pagination.items
         return make_response(
             {
@@ -292,6 +310,12 @@ class ToolList(Resource):
                 .filter(Task.id == task_id)
                 .paginate(page=page, per_page=per_page, error_out=False)
             )
+        elif project_id:
+            pagination = (
+                Tool.query.join(Tool.tasks)
+                .filter(Task.project_id == project_id)
+                .paginate(page=page, per_page=per_page, error_out=False)
+            )
         else:
             user_id = get_jwt_identity()
             pagination = Tool.query.filter(Tool.user_id == user_id).paginate(
@@ -315,25 +339,31 @@ api.add_resource(Signup, "/signup", endpoint="signup")
 api.add_resource(CheckToken, "/me", endpoint="me")
 api.add_resource(ProjectList, "/projects", endpoint="projects")
 api.add_resource(ProjectView, "/projects/<int:project_id>", endpoint="project")
-api.add_resource(TaskList, "/projects/<int:project_id>/tasks", endpoint="tasks")
+api.add_resource(TaskList, "/projects/<int:project_id>/tasks", endpoint="project_tasks")
 api.add_resource(
-    TaskView, "/projects/<int:project_id>/tasks/<int:task_id>", endpoint="task"
+    TaskView, "/projects/<int:project_id>/tasks/<int:task_id>", endpoint="project_task"
 )
 api.add_resource(
     PartList,
     "/projects/<int:project_id>/tasks/<int:task_id>/parts",
-    endpoint="parts",
+    "/projects/<int:project_id>/parts",
+    endpoint="project_parts",
 )
 api.add_resource(
     PartView,
     "/projects/<int:project_id>/tasks/<int:task_id>/parts/<int:part_id>",
-    endpoint="part",
+    endpoint="project_part",
+)
+api.add_resource(
+    ToolList,
+    "/tools",
+    endpoint="tools",
 )
 api.add_resource(
     ToolList,
     "/projects/<int:project_id>/tasks/<int:task_id>/tools",
-    "/tools",
-    endpoint="tools",
+    "/projects/<int:project_id>/tools",
+    endpoint="project_tools",
 )
 
 if __name__ == "__main__":
