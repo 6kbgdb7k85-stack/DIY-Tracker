@@ -16,6 +16,7 @@ class User(db.Model):
         "Project", back_populates="user", cascade="all, delete-orphan"
     )
     parts = db.relationship("Part", back_populates="user", cascade="all, delete-orphan")
+    tools = db.relationship("Tool", back_populates="user", cascade="all, delete-orphan")
 
     @hybrid_property
     def password_hash(self):
@@ -39,7 +40,8 @@ class UserSchema(Schema):
     projects = fields.List(
         fields.Nested(lambda: ProjectSchema(exclude=("user", "tasks")))
     )
-    parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("user", "tasks"))))
+    parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("user", "task"))))
+    tools = fields.List(fields.Nested(lambda: ToolSchema(exclude=("user", "tasks"))))
 
 
 class Project(db.Model):
@@ -61,7 +63,7 @@ class ProjectSchema(Schema):
     name = fields.String()
     description = fields.String()
 
-    user = fields.Nested(lambda: UserSchema(exclude=("projects", "parts")))
+    user = fields.Nested(lambda: UserSchema(exclude=("projects", "parts", "tools")))
     tasks = fields.List(fields.Nested(lambda: TaskSchema(exclude=("project",))))
 
 
@@ -75,11 +77,8 @@ class Task(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
 
     project = db.relationship("Project", back_populates="tasks")
-    parts = db.relationship(
-        "Part",
-        secondary="task_parts",
-        back_populates="tasks",
-    )
+    parts = db.relationship("Part", back_populates="task", cascade="all, delete-orphan")
+    tools = db.relationship("Tool", secondary="task_tools", back_populates="tasks")
 
 
 class TaskSchema(Schema):
@@ -88,8 +87,9 @@ class TaskSchema(Schema):
     description = fields.String()
     time = fields.String()
 
-    project = fields.Nested(lambda: ProjectSchema(exclude=("tasks",)))
-    parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("tasks", "user"))))
+    project = fields.Nested(lambda: ProjectSchema(exclude=("tasks", "user")))
+    parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("task", "user"))))
+    tools = fields.List(fields.Nested(lambda: ToolSchema(exclude=("user", "tasks"))))
 
 
 class Part(db.Model):
@@ -97,32 +97,56 @@ class Part(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    part_type = db.Column(db.String)
     cost = db.Column(db.Float)
     amount_required = db.Column(db.Integer)
     amount_owned = db.Column(db.Integer)
     source = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"))
 
     user = db.relationship("User", back_populates="parts")
-    tasks = db.relationship("Task", secondary="task_parts", back_populates="parts")
+    task = db.relationship("Task", back_populates="parts")
 
 
 class PartSchema(Schema):
     id = fields.Int()
     name = fields.String()
-    part_type = fields.String()
     cost = fields.Float()
     amount_required = fields.Int()
     amount_owned = fields.Int()
     source = fields.String()
 
-    tasks = fields.List(fields.Nested(lambda: TaskSchema(exclude=("parts",))))
-    user = fields.Nested(lambda: UserSchema(exclude=("parts", "projects")))
+    task = fields.Nested(lambda: TaskSchema(exclude=("parts","tools")))
+    user = fields.Nested(lambda: UserSchema(exclude=("parts", "projects", "tools")))
 
 
-class TaskParts(db.Model):
-    __tablename__ = "task_parts"
+class TaskTools(db.Model):
+    __tablename__ = "task_tools"
 
     task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"), primary_key=True)
-    part_id = db.Column(db.Integer, db.ForeignKey("parts.id"), primary_key=True)
+    tool_id = db.Column(db.Integer, db.ForeignKey("tools.id"), primary_key=True)
+
+
+class Tool(db.Model):
+    __tablename__ = "tools"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    owned = db.Column(db.Boolean)
+    cost = db.Column(db.Float)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
+    user = db.relationship("User", back_populates="tools")
+    tasks = db.relationship("Task", secondary="task_tools", back_populates="tools")
+
+
+class ToolSchema(Schema):
+    id = fields.Int()
+    name = fields.String()
+    owned = fields.Bool()
+    cost = fields.Float()
+
+    user = fields.Nested(lambda: UserSchema(exclude=("tools", "projects", "parts")))
+    tasks = fields.List(
+        fields.Nested(lambda: TaskSchema(exclude=("tools", "project", "parts")))
+    )

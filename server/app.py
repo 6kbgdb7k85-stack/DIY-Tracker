@@ -28,13 +28,13 @@ def check_resource_ownership():
         "project": Project,
         "task": Task,
         "part": Part,
-        #'tool':Tool tool not implemented yet
+        "tool": Tool,
     }
 
     if request.endpoint in user_owned_routes:
         user_id = get_jwt_identity()
         user = User.query.filter(User.id == user_id).first()
-        #route id params must be formatted as {resource}_id
+        # route id params must be formatted as {resource}_id
         entity_id = request.view_args.get(f"{request.endpoint}_id")
         resource = user_owned_resources.get(request.endpoint, None)
         # make sure route params match existing resources
@@ -225,18 +225,9 @@ class PartList(Resource):
     def get(self, project_id, task_id=None):
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 5, type=int)
-        if task_id:
-            pagination = (
-                Part.query.join(Part.tasks)
-                .filter(Task.id == task_id)
-                .paginate(page=page, per_page=per_page, error_out=False)
-            )
-        else:
-            pagination = (
-                Part.query.join(Part.tasks)
-                .filter(Task.project_id == project_id)
-                .paginate(page=page, per_page=per_page, error_out=False)
-            )
+        pagination = Part.query.filter(Part.task_id == task_id).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
         parts = pagination.items
         return make_response(
             {
@@ -291,6 +282,34 @@ class PartView(Resource):
             return make_response({"error": "500 server error"})
 
 
+class ToolList(Resource):
+    def get(self, project_id=None, task_id=None):
+        page = request.args.get("page", 1, type=int)
+        per_page = request.args.get("per_page", 5, type=int)
+        if task_id:
+            pagination = (
+                Tool.query.join(Tool.tasks)
+                .filter(Task.id == task_id)
+                .paginate(page=page, per_page=per_page, error_out=False)
+            )
+        else:
+            user_id = get_jwt_identity()
+            pagination = Tool.query.filter(Tool.user_id == user_id).paginate(
+                page=page, per_page=per_page, error_out=False
+            )
+        tools = pagination.items
+        return make_response(
+            {
+                "page": page,
+                "per_page": per_page,
+                "total": pagination.total,
+                "total_pages": pagination.pages,
+                "items": [ToolSchema().dump(tool) for tool in tools],
+            },
+            200,
+        )
+
+
 api.add_resource(Login, "/login", endpoint="login")
 api.add_resource(Signup, "/signup", endpoint="signup")
 api.add_resource(CheckToken, "/me", endpoint="me")
@@ -303,13 +322,18 @@ api.add_resource(
 api.add_resource(
     PartList,
     "/projects/<int:project_id>/tasks/<int:task_id>/parts",
-    "/projects/<int:project_id>/parts",
     endpoint="parts",
 )
 api.add_resource(
     PartView,
     "/projects/<int:project_id>/tasks/<int:task_id>/parts/<int:part_id>",
     endpoint="part",
+)
+api.add_resource(
+    ToolList,
+    "/projects/<int:project_id>/tasks/<int:task_id>/tools",
+    "/tools",
+    endpoint="tools",
 )
 
 if __name__ == "__main__":
