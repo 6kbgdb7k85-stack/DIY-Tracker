@@ -50,6 +50,7 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String)
+    completed=db.Column(db.Boolean)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
     user = db.relationship("User", back_populates="projects")
@@ -62,6 +63,7 @@ class ProjectSchema(Schema):
     id = fields.Int()
     name = fields.String()
     description = fields.String()
+    completed=fields.Bool()
 
     user = fields.Nested(lambda: UserSchema(exclude=("projects", "parts", "tools")))
     tasks = fields.List(fields.Nested(lambda: TaskSchema(exclude=("project",))))
@@ -75,6 +77,7 @@ class Task(db.Model):
     description = db.Column(db.String)
     time = db.Column(db.String)
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
+    completed=db.Column(db.Boolean)
 
     project = db.relationship("Project", back_populates="tasks")
     parts = db.relationship("Part", back_populates="task", cascade="all, delete-orphan")
@@ -86,6 +89,7 @@ class TaskSchema(Schema):
     name = fields.String()
     description = fields.String()
     time = fields.String()
+    completed=fields.Bool()
 
     project = fields.Nested(lambda: ProjectSchema(exclude=("tasks", "user")))
     parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("task", "user"))))
