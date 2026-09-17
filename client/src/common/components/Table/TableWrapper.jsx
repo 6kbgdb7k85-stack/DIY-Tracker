@@ -44,6 +44,8 @@ export default function TableWrapper({
     }
   }
 
+  console.log(pagination)
+
   return (
     <Paper>
       {loading ? (
