@@ -19,9 +19,11 @@ export default function useFetch(url, method = "GET", onLoad = true) {
     }
   }, []);
 
-  function runFetch(body) {
+  function runFetch(body = {}) {
+    const { urlParams = [], ...payload } = body ?? {};
+
     setLoading(true);
-    fetch('/api/'+url, compileFetchOptions(body))
+    fetch(compileUrl(urlParams), compileFetchOptions(payload))
       .then((r) => {
         if (r.ok) {
           return r.json();
@@ -29,6 +31,16 @@ export default function useFetch(url, method = "GET", onLoad = true) {
       })
       .then((data) => {setResponse(data); setLoading(false)})
       .catch((error) => {console.error(error); setLoading(false)});
+  }
+
+  function compileUrl(urlParams = []) {
+    let parsedUrl = '/api/' + url;
+    if (urlParams.length) {
+      urlParams.forEach((param) => {
+        parsedUrl = parsedUrl.replace(param.key, param.value);
+      });
+    }
+    return parsedUrl;
   }
 
   //compile options for fetch based on method and supplied body

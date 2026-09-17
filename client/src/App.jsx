@@ -26,7 +26,7 @@ function App() {
           <Typography variant="h1" sx={{ flexGrow: 1 }}>
             DIY Tracker
           </Typography>
-          <Button onClick={() => {localStorage.removeItem("token");navigate('/')}}>
+          <Button variant="contained" onClick={() => {localStorage.removeItem("token");navigate('/')}}>
             Logout
           </Button>
         </Toolbar>
