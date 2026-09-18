@@ -10,7 +10,8 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import React, { useState } from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
+import React, { useEffect, useState } from "react";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -32,19 +33,18 @@ export default function TableWrapper({
   expandedTable,
   pagination,
   loading,
-  onRowClick,
-  onPage,
-  onChange
+  onRowClick = () => {},
+  onPage = () => {},
+  onChange = () => {},
+  onDelete,
 }) {
-  const [open, setOpen] = useState();
+  const [open, setOpen] = useState({});
 
-  function rowClick(event,row){
-    if (event.target.localName.toLowerCase()==='td'){
-        onRowClick(row.id)
+  function rowClick(event, row) {
+    if (event.target.localName.toLowerCase() === "td") {
+      onRowClick(row.id);
     }
   }
-
-  console.log(pagination)
 
   return (
     <Paper>
@@ -61,7 +61,7 @@ export default function TableWrapper({
               </TableRow>
             </TableHead>
             <TableBody>
-              {[...Array(pagination.perPage)].map((_, idx) => (
+              {[...Array(pagination?.perPage || 5)].map((_, idx) => (
                 <TableRow key={idx}>
                   {cols.map((col) => (
                     <TableCell key={col.id} />
@@ -83,13 +83,16 @@ export default function TableWrapper({
                       {col.label}
                     </TableCell>
                   ))}
+                  {onDelete ? <TableCell /> : <></>}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {data.map((rowData, idx) => {
                   return (
                     <React.Fragment key={idx}>
-                      <TableRow hover onClick={(e)=>rowClick(e,rowData)}
+                      <TableRow
+                        hover
+                        onClick={(e) => rowClick(e, rowData)}
                         sx={{
                           "& > .MuiTableCell-root": { borderBottom: "unset" },
                         }}
@@ -97,13 +100,20 @@ export default function TableWrapper({
                         {expandedTable ? (
                           <TableCell>
                             <IconButton
-                              aria-label={open ? "collapse row" : "expand row"}
-                              aria-expanded={open}
+                              aria-label={
+                                open[idx] ? "collapse row" : "expand row"
+                              }
+                              aria-expanded={open[idx]}
                               aria-controls={idx + "-expanded"}
                               size="small"
-                              onClick={() => setOpen(!open)}
+                              onClick={() =>
+                                setOpen((prevState) => ({
+                                  ...prevState,
+                                  [idx]: !prevState[idx],
+                                }))
+                              }
                             >
-                              {open ? (
+                              {open[idx] ? (
                                 <KeyboardArrowUpIcon />
                               ) : (
                                 <KeyboardArrowDownIcon />
@@ -114,20 +124,40 @@ export default function TableWrapper({
                         {cols.map((col) => {
                           const val = rowData[col.id];
                           return (
-                            <TableCellWrapper key={`${idx}-${col.id}`} id={col.id} rowId={rowData['id']} value={val} type={col.type} onChange={onChange}/>
+                            <TableCellWrapper
+                              key={`${idx}-${col.id}`}
+                              id={col.id}
+                              rowId={rowData["id"]}
+                              value={val}
+                              type={col.type}
+                              onChange={onChange}
+                            />
                           );
                         })}
+                        {onDelete ? (
+                          <TableCell>
+                            <IconButton aria-label="delete" onClick={()=>onDelete(rowData.id)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </TableCell>
+                        ) : (
+                          <></>
+                        )}
                       </TableRow>
                       {expandedTable ? (
                         <TableRow
                           id={idx + "-expanded"}
-                          aria-hidden={!open ? true : undefined}
+                          aria-hidden={!open[idx] ? true : undefined}
                         >
                           <TableCell
                             style={{ paddingBottom: 0, paddingTop: 0 }}
                             colSpan={6}
                           >
-                            <Collapse in={open} timeout="auto" unmountOnExit>
+                            <Collapse
+                              in={open[idx]}
+                              timeout="auto"
+                              unmountOnExit
+                            >
                               <Box sx={{ margin: 1 }}>
                                 <Typography
                                   variant="h6"
@@ -145,6 +175,7 @@ export default function TableWrapper({
                                       {expandedTable.cols.map((xcol, xi) => (
                                         <TableCell
                                           key={idx + "-expanded-" + xi}
+                                          sx={{ textAlign: "center" }}
                                         >
                                           {xcol.label}
                                         </TableCell>
@@ -157,11 +188,11 @@ export default function TableWrapper({
                                         <TableRow key={"xdata-" + xdataIndex}>
                                           {expandedTable.cols.map(
                                             (xcol, xi) => (
-                                              <TableCell
+                                              <TableCellWrapper
                                                 key={xdataIndex + "-" + xi}
-                                              >
-                                                {xdata[xcol.id]}
-                                              </TableCell>
+                                                type={xcol.type}
+                                                value={xdata[xcol.id]}
+                                              />
                                             ),
                                           )}
                                         </TableRow>
@@ -182,15 +213,19 @@ export default function TableWrapper({
               </TableBody>
             </Table>
           </TableContainer>
-          {pagination?(<TablePagination
-            rowsPerPageOptions={[5, 10, 15]}
-            component={"div"}
-            count={pagination.total}
-            rowsPerPage={pagination.perPage}
-            page={pagination.page - 1}
-            onPageChange={onPage}
-            onRowsPerPageChange={onPage}
-          />):<></>}
+          {pagination ? (
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 15]}
+              component={"div"}
+              count={pagination.total}
+              rowsPerPage={pagination.perPage}
+              page={pagination.page - 1}
+              onPageChange={onPage}
+              onRowsPerPageChange={onPage}
+            />
+          ) : (
+            <></>
+          )}
         </>
       )}
     </Paper>

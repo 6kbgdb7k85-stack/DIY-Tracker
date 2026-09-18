@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 export default function useFetch(url, method = "GET", onLoad = true) {
   const [loading, setLoading] = useState(onLoad);
   const [response, setResponse] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (onLoad) {
@@ -24,17 +25,29 @@ export default function useFetch(url, method = "GET", onLoad = true) {
 
     setLoading(true);
     fetch(compileUrl(urlParams), compileFetchOptions(payload))
-      .then((r) => {
-        if (r.ok) {
-          return r.json();
+      .then(async (r) => {
+        if(r.status===204){
+            return 'delete successful'
         }
+        const data = await r.json();
+        if (!r.ok) {
+          throw new Error(data.error);
+        }
+        
+        return data;
       })
-      .then((data) => {setResponse(data); setLoading(false)})
-      .catch((error) => {console.error(error); setLoading(false)});
+      .then((data) => {
+        setResponse(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setLoading(false);
+      });
   }
 
   function compileUrl(urlParams = []) {
-    let parsedUrl = '/api/' + url;
+    let parsedUrl = "/api/" + url;
     if (urlParams.length) {
       urlParams.forEach((param) => {
         parsedUrl = parsedUrl.replace(param.key, param.value);
@@ -45,22 +58,24 @@ export default function useFetch(url, method = "GET", onLoad = true) {
 
   //compile options for fetch based on method and supplied body
   function compileFetchOptions(body) {
+    const { method: bodyMethod, ...requestBody } = body ?? {};
+    const compiledMethod = bodyMethod || method; //allows for using the same useFetch for multiple methods like get and patch depending on circumstance
     const params = {
-      method,
+      method: compiledMethod,
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     };
-    if (method === "GET") {
+    if (compiledMethod === "GET") {
       return params;
     }
-    if (method === "POST" || method === "PATCH") {
+    if (compiledMethod === "POST" || compiledMethod === "PATCH") {
       return {
         ...params,
         headers: { ...params.headers, "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify(requestBody),
       };
-    } else if (method === "DELETE") {
+    } else if (compiledMethod === "DELETE") {
       return params;
     } else {
       console.warn("Invalid config: attempting fetch with default params");
