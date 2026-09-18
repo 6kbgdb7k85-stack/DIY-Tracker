@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import TableWrapper from "../../common/components/Table/TableWrapper";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import useFetch from "../../common/utils/useFetch";
 import { TOOL_TABLE_COLS } from "./toolsContants";
 
-export default function ToolsTable() {
+export default function ToolsTable({cols}) {
   const { projectId, taskId } = useParams();
 
   const url = taskId
@@ -12,6 +12,8 @@ export default function ToolsTable() {
     : `projects/${projectId}/tools`;
 
   const { response: toolsData, loading } = useFetch(url);
+
+  const navigate = useNavigate();
 
   const [tools, setTools] = useState([]);
   const [pagination, setPagination] = useState({
@@ -28,12 +30,17 @@ export default function ToolsTable() {
     }
   }, [toolsData]);
 
+  function handleRowClick(id){
+    navigate(`/tools/${id}`)
+  }
+
   return (
     <TableWrapper
-      cols={TOOL_TABLE_COLS}
+      cols={cols||TOOL_TABLE_COLS}
       data={tools}
       loading={loading}
       pagination={pagination}
+      onRowClick={handleRowClick}
     />
   );
 }

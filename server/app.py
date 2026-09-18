@@ -206,11 +206,11 @@ class TaskList(Resource):
 
 
 class TaskView(Resource):
-    def get(self, project_id, task_id):
+    def get(self, task_id):
         task = Task.query.filter(Task.id == task_id).first()
         return make_response(TaskSchema().dump(task), 200)
 
-    def patch(self, project_id, task_id):
+    def patch(self, task_id):
         task = Task.query.filter(Task.id == task_id).first()
         request_body = request.get_json()
         for k, v in request_body.items():
@@ -222,7 +222,7 @@ class TaskView(Resource):
         except IntegrityError:
             return make_response({"error": "400 Bad Request"})
 
-    def delete(self, project_id, task_id):
+    def delete(self, task_id):
         task = Task.query.filter(Task.id == task_id).first()
         try:
             db.session.delete(task)
@@ -274,11 +274,11 @@ class PartList(Resource):
 
 
 class PartView(Resource):
-    def get(self, project_id, task_id, part_id):
+    def get(self, part_id):
         part = Part.query.filter(Part.id == part_id).first()
         return make_response(PartSchema().dump(part), 200)
 
-    def patch(self, project_id, task_id, part_id):
+    def patch(self, part_id):
         part = Part.query.filter(Part.id == part_id).first()
         request_body = request.get_json()
         for k, v in request_body.items():
@@ -290,7 +290,7 @@ class PartView(Resource):
         except IntegrityError:
             return make_response({"error": "400 Bad Request"})
 
-    def delete(self, project_id, task_id, part_id):
+    def delete(self, part_id):
         part = Part.query.filter(Part.id == part_id).first()
         try:
             db.session.delete(part)
@@ -334,18 +334,43 @@ class ToolList(Resource):
             200,
         )
 
+    def post(self, project_id=None, task_id=None):
+        user_id = get_jwt_identity()
+        request_body = request.get_json()
+        tool = Tool(**request_body)
+        tool.user_id = user_id
+        try:
+            db.session.add(tool)
+            db.session.commit()
+            return make_response(ToolSchema().dump(tool), 201)
+        except IntegrityError:
+            return make_response({"error": "400 Bad Request"})
+
 
 class ToolView(Resource):
-    def get(
-        self,
-        tool_id,
-        project_id=None,
-        task_id=None,
-    ):
+    def get(self, tool_id):
         tool = Tool.query.filter(Tool.id == tool_id).first()
         return make_response(ToolSchema().dump(tool), 200)
 
-    def delete(self, tool_id, project_id=None, task_id=None):
+    def patch(self,tool_id):
+        forbidden_attr=[
+            "id",
+            "user",
+            "tasks"
+        ]
+        tool = Tool.query.filter(Tool.id==tool_id).first()
+        request_body=request.get_json()
+        for k,v in request_body.items():
+            if k not in forbidden_attr and hasattr(tool,k):
+                setattr(tool,k,v)
+        try:
+
+            db.session.commit()
+            return make_response(ToolSchema().dump(tool),200)
+        except IntegrityError:
+            return make_response({'error':'400 Bad Request'},400)
+
+    def delete(self, tool_id):
         tool = Tool.query.filter(Tool.id == tool_id).first()
         try:
             db.session.delete(tool)
@@ -361,9 +386,7 @@ api.add_resource(CheckToken, "/me", endpoint="me")
 api.add_resource(ProjectList, "/projects", endpoint="projects")
 api.add_resource(ProjectView, "/projects/<int:project_id>", endpoint="project")
 api.add_resource(TaskList, "/projects/<int:project_id>/tasks", endpoint="project_tasks")
-api.add_resource(
-    TaskView, "/projects/<int:project_id>/tasks/<int:task_id>", endpoint="project_task"
-)
+api.add_resource(TaskView, "/tasks/<int:task_id>", endpoint="project_task")
 api.add_resource(
     PartList,
     "/projects/<int:project_id>/tasks/<int:task_id>/parts",
@@ -372,7 +395,7 @@ api.add_resource(
 )
 api.add_resource(
     PartView,
-    "/projects/<int:project_id>/tasks/<int:task_id>/parts/<int:part_id>",
+    "/parts/<int:part_id>",
     endpoint="project_part",
 )
 api.add_resource(
@@ -388,7 +411,6 @@ api.add_resource(
 )
 api.add_resource(
     ToolView,
-    "/projects/<int:project_id>/tasks/<int:task_id>/tools/<int:tool_id>",
     "/tools/<int:tool_id>",
     endpoint="tool",
 )

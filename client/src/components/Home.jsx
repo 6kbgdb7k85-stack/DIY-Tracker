@@ -7,7 +7,8 @@ function Home() {
   return (
     <>
       <h1>Welcome to DIY Tracker</h1>
-      <Button onClick={()=>navigate("/login")}>Login</Button>
+      <Button variant="contained" onClick={()=>navigate("/login")}>Login</Button>
+      <Button variant="text" color="secondary" onClick={()=>navigate("/signup")}>Create Account</Button>
     </>
   );
 }

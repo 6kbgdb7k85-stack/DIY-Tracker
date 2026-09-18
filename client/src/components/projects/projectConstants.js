@@ -5,7 +5,7 @@ export const PROJECT_TABLE_COLUMNS = [
 ];
 
 export const PROJECT_TASKS_COLUMNS = [
-  { id: "completed", label: "Completed", type: "edit-checkbox" },
+  { id: "completed", label: "Completed", type: "checkbox" },
   { id: "name", label: "Name" },
   { id: "description", label: "Description" },
 ];
@@ -19,7 +19,6 @@ export const PROJECT_TASKS_SUBTABLE = [
 export const PROJECT_TOOL_COLUMNS = [
   { id: "name", label: "Name" },
   { id: "owned", label: "Owned?", type: "checkbox" },
-  { id: "source", label: "Source" },
   { id: "cost", label: "Cost to Buy" },
 ];
 
