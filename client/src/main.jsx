@@ -5,7 +5,6 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import App from "./App.jsx";
 import ProjectList from "./components/projects/ProjectList.jsx";
 import ProjectLayout from "./components/projects/ProjectLayout.jsx";
-import Task from "./components/Task.jsx";
 import Part from "./components/Part.jsx";
 import Signup from "./components/Signup.jsx";
 import Login from "./components/auth/Login.jsx";
@@ -13,6 +12,7 @@ import ProtectedRoute from "./common/components/ProtectedRoute.jsx";
 import Home from "./components/Home.jsx";
 import ToolView from "./components/tools/ToolView.jsx";
 import ProjectView from "./components/projects/ProjectView.jsx";
+import TaskView from "./components/tasks/TaskView.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -25,9 +25,9 @@ createRoot(document.getElementById("root")).render(
           <Route element={<ProtectedRoute />}>
             <Route path="projects" element={<ProjectLayout />}>
               <Route index element={<ProjectList />} />
-              <Route path=":projectId" element={<ProjectView />}>
-                <Route path="tasks/:taskId" element={<Task />}></Route>
-              </Route>
+              <Route path=":projectId" element={<ProjectView />}/>
+              <Route path=":projectId/tasks/:taskId" element={<TaskView />}/>
+              <Route path=":projectId/tasks/new" element={<TaskView/>}/>
             </Route>
             <Route path="parts/:partId" element={<Part />} />
             <Route path="tools/:toolId" element={<ToolView />}/>
