@@ -11,6 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
 import React, { useEffect, useState } from "react";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
@@ -37,6 +38,7 @@ export default function TableWrapper({
   onPage = () => {},
   onChange = () => {},
   onDelete,
+  onAdd,
 }) {
   const [open, setOpen] = useState({});
 
@@ -84,6 +86,15 @@ export default function TableWrapper({
                     </TableCell>
                   ))}
                   {onDelete ? <TableCell /> : <></>}
+                  {onAdd ? (
+                    <TableCell sx={{ textAlign: "right" }}>
+                      <IconButton aria-label="add" onClick={onAdd}>
+                        <AddIcon />
+                      </IconButton>
+                    </TableCell>
+                  ) : (
+                    <></>
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -136,13 +147,17 @@ export default function TableWrapper({
                         })}
                         {onDelete ? (
                           <TableCell>
-                            <IconButton aria-label="delete" onClick={()=>onDelete(rowData.id)}>
+                            <IconButton
+                              aria-label="delete"
+                              onClick={() => onDelete(rowData.id)}
+                            >
                               <DeleteIcon />
                             </IconButton>
                           </TableCell>
                         ) : (
                           <></>
                         )}
+                        {onAdd ? <TableCell /> : <></>}
                       </TableRow>
                       {expandedTable ? (
                         <TableRow
