@@ -6,7 +6,7 @@ import App from "./App.jsx";
 import ProjectList from "./components/projects/ProjectList.jsx";
 import ProjectLayout from "./components/projects/ProjectLayout.jsx";
 import Part from "./components/Part.jsx";
-import Signup from "./components/Signup.jsx";
+import Signup from "./components/auth/Signup.jsx";
 import Login from "./components/auth/Login.jsx";
 import ProtectedRoute from "./common/components/ProtectedRoute.jsx";
 import Home from "./components/Home.jsx";
