@@ -44,7 +44,7 @@ function Login() {
       
     >
       <TextField id="username" label="username" value={formData.username} onChange={handleChange}/>
-      <TextField id="password" label="password" value={formData.password} onChange={handleChange}/>
+      <TextField id="password" type="password" label="password" value={formData.password} onChange={handleChange}/>
       <Button onClick={handleLogin}>Login</Button>
     </form>
   );
