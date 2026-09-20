@@ -6,6 +6,7 @@ from flask_jwt_extended import (
 )
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
+from marshmallow import EXCLUDE
 
 from config import app, db, api
 from models import *
@@ -213,14 +214,15 @@ class TaskView(Resource):
     def patch(self,project_id, task_id):
         task = Task.query.filter(Task.id == task_id).first()
         request_body = request.get_json()
+        validatedData=TaskSchema(exclude=("project","parts")).load(request_body,unknown=EXCLUDE,partial=True)
         forbidden_attr=[
                     "id",
                     "project",
                     "parts",
                     "tools"
                 ]
-        for k, v in request_body.items():
-            if k not in forbidden_attr and hasattr(task, k):
+        for k, v in validatedData.items():
+            if hasattr(task, k):
                 setattr(task, k, v)
         try:
             db.session.commit()
@@ -359,15 +361,11 @@ class ToolView(Resource):
         return make_response(ToolSchema().dump(tool), 200)
 
     def patch(self,tool_id):
-        forbidden_attr=[
-            "id",
-            "user",
-            "tasks"
-        ]
         tool = Tool.query.filter(Tool.id==tool_id).first()
         request_body=request.get_json()
-        for k,v in request_body.items():
-            if k not in forbidden_attr and hasattr(tool,k):
+        validatedData=ToolSchema(exclude=('user',)).load(request_body,partial=True,unknown=EXCLUDE)
+        for k,v in validatedData.items():
+            if hasattr(tool,k):
                 setattr(tool,k,v)
         try:
 
