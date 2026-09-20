@@ -83,7 +83,7 @@ class Login(Resource):
 class Signup(Resource):
     def post(self):
         username = request.get_json().get("username")
-        password = request.get_json().get("username")
+        password = request.get_json().get("password")
         if not username or not password:
             return make_response({"error": "400 Bad Request"})
         user = User(username=username)

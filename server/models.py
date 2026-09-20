@@ -50,7 +50,7 @@ class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String)
-    completed=db.Column(db.Boolean)
+    completed = db.Column(db.Boolean)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
     user = db.relationship("User", back_populates="projects")
@@ -63,9 +63,11 @@ class ProjectSchema(Schema):
     id = fields.Int()
     name = fields.String(required=True)
     description = fields.String()
-    completed=fields.Bool()
+    completed = fields.Bool()
 
-    user = fields.Nested(lambda: UserSchema(exclude=("projects", "parts", "tools")),required=True)
+    user = fields.Nested(
+        lambda: UserSchema(exclude=("projects", "parts", "tools")), required=True
+    )
     tasks = fields.List(fields.Nested(lambda: TaskSchema(exclude=("project",))))
 
 
@@ -77,7 +79,7 @@ class Task(db.Model):
     description = db.Column(db.String)
     time = db.Column(db.String)
     project_id = db.Column(db.Integer, db.ForeignKey("projects.id"))
-    completed=db.Column(db.Boolean)
+    completed = db.Column(db.Boolean)
 
     project = db.relationship("Project", back_populates="tasks")
     parts = db.relationship("Part", back_populates="task", cascade="all, delete-orphan")
@@ -91,7 +93,9 @@ class TaskSchema(Schema):
     time = fields.String(allow_none=True)
     completed = fields.Bool(allow_none=True)
 
-    project = fields.Nested(lambda: ProjectSchema(exclude=("tasks", "user")),required=True)
+    project = fields.Nested(
+        lambda: ProjectSchema(exclude=("tasks", "user")), required=True
+    )
     parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("task", "user"))))
     tools = fields.List(fields.Nested(lambda: ToolSchema(exclude=("user", "tasks"))))
 
@@ -120,8 +124,10 @@ class PartSchema(Schema):
     amount_owned = fields.Int()
     source = fields.String()
 
-    task = fields.Nested(lambda: TaskSchema(exclude=("parts","tools")),required=True)
-    user = fields.Nested(lambda: UserSchema(exclude=("parts", "projects", "tools")),required=True)
+    task = fields.Nested(lambda: TaskSchema(exclude=("parts", "tools")), required=True)
+    user = fields.Nested(
+        lambda: UserSchema(exclude=("parts", "projects", "tools")), required=True
+    )
 
 
 class TaskTools(db.Model):
@@ -150,7 +156,9 @@ class ToolSchema(Schema):
     owned = fields.Bool()
     cost = fields.Float()
 
-    user = fields.Nested(lambda: UserSchema(exclude=("tools", "projects", "parts")),required=True)
+    user = fields.Nested(
+        lambda: UserSchema(exclude=("tools", "projects", "parts")), required=True
+    )
     tasks = fields.List(
         fields.Nested(lambda: TaskSchema(exclude=("tools", "project", "parts")))
     )
