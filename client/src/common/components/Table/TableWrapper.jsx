@@ -227,7 +227,7 @@ export default function TableWrapper({
                         ) : (
                           <></>
                         )}
-                        {onDelete ? (
+                        {onDelete && !editRows.includes(idx) ? (
                           <TableCell>
                             <IconButton
                               aria-label="delete"

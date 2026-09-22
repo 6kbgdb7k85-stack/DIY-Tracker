@@ -39,7 +39,7 @@ export default function TableCellWrapper({
               onChange={handleChange}
             />
         );
-      case FieldTypes.Checkbox:
+      case FieldTypes.CHECKBOX:
         return (
           <>
             {isEdit ? (
