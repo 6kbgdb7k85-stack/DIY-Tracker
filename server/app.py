@@ -30,7 +30,7 @@ def check_resource_ownership():
         "project_parts",
         "project_tools",
         "project_tasks",
-        "part"
+        "part",
     ]
     # resource classes to use based on endpoint
     user_owned_resources = {
@@ -151,8 +151,10 @@ class ProjectView(Resource):
     def patch(self, project_id):
         project = Project.query.filter(Project.id == project_id).first()
         request_body = request.get_json()
-
-        for k, v in request_body.items():
+        validated_data = ProjectSchema(exclude=("user", "tasks")).load(
+            request_body, unknown=EXCLUDE, partial=True
+        )
+        for k, v in validated_data.items():
             if k != "id" and hasattr(project, k):
                 setattr(project, k, v)
         try:
@@ -209,20 +211,16 @@ class TaskList(Resource):
 
 
 class TaskView(Resource):
-    def get(self,project_id, task_id):
+    def get(self, project_id, task_id):
         task = Task.query.filter(Task.id == task_id).first()
-        return make_response(TaskSchema(exclude=('project',)).dump(task), 200)
+        return make_response(TaskSchema(exclude=("project",)).dump(task), 200)
 
-    def patch(self,project_id, task_id):
+    def patch(self, project_id, task_id):
         task = Task.query.filter(Task.id == task_id).first()
         request_body = request.get_json()
-        validatedData=TaskSchema(exclude=("project","parts")).load(request_body,unknown=EXCLUDE,partial=True)
-        forbidden_attr=[
-                    "id",
-                    "project",
-                    "parts",
-                    "tools"
-                ]
+        validatedData = TaskSchema(exclude=("project", "parts")).load(
+            request_body, unknown=EXCLUDE, partial=True
+        )
         for k, v in validatedData.items():
             if hasattr(task, k):
                 setattr(task, k, v)
@@ -232,7 +230,7 @@ class TaskView(Resource):
         except IntegrityError:
             return make_response({"error": "400 Bad Request"})
 
-    def delete(self,project_id, task_id):
+    def delete(self, project_id, task_id):
         task = Task.query.filter(Task.id == task_id).first()
         try:
             db.session.delete(task)
@@ -273,7 +271,7 @@ class PartList(Resource):
         user_id = get_jwt_identity()
         task = Task.query.filter(Task.id == task_id).first()
         part = Part(**request_body)
-        part.task=task
+        part.task = task
         part.user_id = user_id
         try:
             db.session.add(part)
@@ -291,7 +289,7 @@ class PartView(Resource):
     def patch(self, part_id):
         part = Part.query.filter(Part.id == part_id).first()
         request_body = request.get_json()
-        validatedData = PartSchema().load(request_body,partial=True,unknown=EXCLUDE)
+        validatedData = PartSchema().load(request_body, partial=True, unknown=EXCLUDE)
         for k, v in validatedData.items():
             if k != "id" and hasattr(part, k):
                 setattr(part, k, v)
@@ -363,19 +361,21 @@ class ToolView(Resource):
         tool = Tool.query.filter(Tool.id == tool_id).first()
         return make_response(ToolSchema().dump(tool), 200)
 
-    def patch(self,tool_id):
-        tool = Tool.query.filter(Tool.id==tool_id).first()
-        request_body=request.get_json()
-        validatedData=ToolSchema(exclude=('user',)).load(request_body,partial=True,unknown=EXCLUDE)
-        for k,v in validatedData.items():
-            if hasattr(tool,k):
-                setattr(tool,k,v)
+    def patch(self, tool_id):
+        tool = Tool.query.filter(Tool.id == tool_id).first()
+        request_body = request.get_json()
+        validatedData = ToolSchema(exclude=("user",)).load(
+            request_body, partial=True, unknown=EXCLUDE
+        )
+        for k, v in validatedData.items():
+            if hasattr(tool, k):
+                setattr(tool, k, v)
         try:
 
             db.session.commit()
-            return make_response(ToolSchema().dump(tool),200)
+            return make_response(ToolSchema().dump(tool), 200)
         except IntegrityError:
-            return make_response({'error':'400 Bad Request'},400)
+            return make_response({"error": "400 Bad Request"}, 400)
 
     def delete(self, tool_id):
         tool = Tool.query.filter(Tool.id == tool_id).first()
@@ -393,7 +393,9 @@ api.add_resource(CheckToken, "/me", endpoint="me")
 api.add_resource(ProjectList, "/projects", endpoint="projects")
 api.add_resource(ProjectView, "/projects/<int:project_id>", endpoint="project")
 api.add_resource(TaskList, "/projects/<int:project_id>/tasks", endpoint="project_tasks")
-api.add_resource(TaskView, "/projects/<int:project_id>/tasks/<int:task_id>", endpoint="project_task")
+api.add_resource(
+    TaskView, "/projects/<int:project_id>/tasks/<int:task_id>", endpoint="project_task"
+)
 api.add_resource(
     PartList,
     "/projects/<int:project_id>/tasks/<int:task_id>/parts",

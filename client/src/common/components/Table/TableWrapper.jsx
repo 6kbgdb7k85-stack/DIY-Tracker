@@ -58,7 +58,11 @@ export default function TableWrapper({
   }, [data]);
 
   function rowClick(event, row) {
-    if (event.target.localName.toLowerCase() === "td") {
+    const rowIndex = rows.findIndex((item) => item.id === row.id);
+    if (
+      event.target.localName.toLowerCase() === "td" &&
+      !editRows.includes(rowIndex)
+    ) {
       onRowClick(row.id);
     }
   }
@@ -85,7 +89,10 @@ export default function TableWrapper({
     });
     const newRow = {};
     cols.forEach((col) => {
-      if (col.type == FieldTypes.CHECKBOX) {
+      if (
+        col.type == FieldTypes.CHECKBOX ||
+        col.type === FieldTypes.EDIT_CHECKBOX
+      ) {
         newRow[col.id] = false;
       } else {
         newRow[col.id] = "";
@@ -284,7 +291,7 @@ export default function TableWrapper({
                                     </TableRow>
                                   </TableHead>
                                   <TableBody>
-                                    {rowData[expandedTable.dataCol].map(
+                                    {rowData[expandedTable.dataCol]?.map(
                                       (xdata, xdataIndex) => (
                                         <TableRow key={"xdata-" + xdataIndex}>
                                           {expandedTable.cols.map(

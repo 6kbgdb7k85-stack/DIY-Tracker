@@ -206,12 +206,6 @@ export default function TaskView() {
     <>
       {task ? (
         <>
-          <Button
-            variant="outlined"
-            onClick={() => navigate(`/projects/${projectId}`)}
-          >
-            Return to Project
-          </Button>
           <Typography variant="h3" sx={{ textAlign: "center" }}>
             {task.name}
           </Typography>
