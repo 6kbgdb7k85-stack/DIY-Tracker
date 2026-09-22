@@ -20,6 +20,7 @@ export default function TaskView() {
 
   const [edit, setEdit] = useState(isNew);
   const [task, setTask] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -45,7 +46,19 @@ export default function TaskView() {
     response: updatePartResponse,
     loading: updatePartLoading,
     runFetch: updatePart,
+    setResponse: setUpdatePartResponse
   } = useFetch("parts/:partId", "PATCH", false);
+  // secondary alias for clarity when deleting
+  const deletePart = updatePart;
+
+  useEffect(() => {
+    if (deleteId?.parts) {
+      deletePart({
+        urlParams: [{ key: ":partId", value: deleteId.parts }],
+        method: "DELETE",
+      });
+    }
+  }, [deleteId]);
 
   useEffect(() => {
     if (taskResponse) {
@@ -72,28 +85,37 @@ export default function TaskView() {
     }
   }, [edit]);
 
-  useEffect(()=>{
-    if(createPartResponse){
-      setTask(prevState=>({
+  useEffect(() => {
+    if (createPartResponse) {
+      setTask((prevState) => ({
         ...prevState,
-        parts:[...prevState.parts,createPartResponse]
-      }))
+        parts: [...prevState.parts, createPartResponse],
+      }));
     }
-  },[createPartResponse])
+  }, [createPartResponse]);
 
-  useEffect(()=>{
-    if(updatePartResponse){
-      setTask(prevState=>({
-        ...prevState,
-        parts: prevState.parts.map(part=>{
-          if(part.id===updatePartResponse.id){
-            return updatePartResponse
-          }
-          return part
-        })
-      }))
+  useEffect(() => {
+    if (updatePartResponse) {
+      if (deleteId) {
+        setTask((prevState) => ({
+          ...prevState,
+          parts: prevState.parts.filter((part) => part.id !== deleteId.parts),
+        }));
+        setDeleteId(null);
+        setUpdatePartResponse(null)
+      } else {
+        setTask((prevState) => ({
+          ...prevState,
+          parts: prevState.parts.map((part) => {
+            if (part.id === updatePartResponse.id) {
+              return updatePartResponse;
+            }
+            return part;
+          }),
+        }));
+      }
     }
-  },[updatePartResponse])
+  }, [updatePartResponse]);
 
   function handleChange(e) {
     const newData = { ...task };
@@ -211,6 +233,7 @@ export default function TaskView() {
                 canAdd
                 canEdit
                 onSave={(row) => handleRowSave(row, "parts")}
+                onDelete={(rowId) => setDeleteId({ parts: rowId })}
               />
             </Grid>
             <Grid size={6}>
