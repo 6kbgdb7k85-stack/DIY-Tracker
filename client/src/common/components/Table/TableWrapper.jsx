@@ -65,7 +65,7 @@ export default function TableWrapper({
 
   function handleChange(e) {
     if (e.type === FieldTypes.EDIT_CHECKBOX) {
-      console.log(e)
+      console.log(e);
       onChange({ ...e, rowId: rows[e.rowId].id });
     } else {
       setRows((prevState) =>
@@ -317,8 +317,10 @@ export default function TableWrapper({
               count={pagination.total}
               rowsPerPage={pagination.perPage}
               page={pagination.page - 1}
-              onPageChange={(e,newPage)=>onPage('page',newPage)}
-              onRowsPerPageChange={(e)=>onPage('perPage',parseInt(e.target.value,10))}
+              onPageChange={(e, newPage) => onPage({ perPage, page: newPage })}
+              onRowsPerPageChange={(e) =>
+                onPage({ perPage: parseInt(e.target.value, 10), page: 1 })
+              }
             />
           ) : (
             <></>

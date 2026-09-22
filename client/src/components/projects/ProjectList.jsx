@@ -20,11 +20,19 @@ import Grid from "@mui/material/Grid";
 import { TOOL_TABLE_COLS } from "../tools/toolsContants";
 
 function ProjectList() {
-  const [projectPagination, setProjectPagination] = useState({
-    page: 1,
-    perPage: 5,
-    total: 0,
-    totalPages: 0,
+  const [pagination, setPagination] = useState({
+    projects: {
+      page: 1,
+      perPage: 5,
+      total: 0,
+      totalPages: 0,
+    },
+    tools: {
+      page: 1,
+      perPage: 5,
+      total: 0,
+      totalPages: 0,
+    },
   });
   const [projects, setProjects] = useState([]);
   const [tools, setTools] = useState([]);
@@ -42,7 +50,11 @@ function ProjectList() {
     runFetch: updateProject,
   } = useFetch("projects/:projectId", "PATCH", false);
 
-  const { response: toolsResponse, loading: toolsLoading } = useFetch("/tools");
+  const {
+    response: toolsResponse,
+    loading: toolsLoading,
+    runFetch: getTools,
+  } = useFetch("/tools");
   const {
     response: deleteToolResponse,
     loading: deleteToolLoading,
@@ -54,12 +66,15 @@ function ProjectList() {
   useEffect(() => {
     if (projectsResponse) {
       setProjects(projectsResponse.items);
-      setProjectPagination({
-        page: projectsResponse.page,
-        perPage: projectsResponse.per_page,
-        total: projectsResponse.total,
-        totalPages: projectsResponse.total_pages,
-      });
+      setPagination((prevState) => ({
+        ...prevState,
+        projects: {
+          page: projectsResponse.page,
+          perPage: projectsResponse.per_page,
+          total: projectsResponse.total,
+          totalPages: projectsResponse.total_pages,
+        },
+      }));
     }
   }, [projectsResponse]);
 
@@ -82,6 +97,13 @@ function ProjectList() {
       setTools((prevState) =>
         prevState.filter((tool) => tool.id !== deleteId.tools),
       );
+      setPagination((prevState) => ({
+        ...prevState,
+        tools: {
+          ...prevState.tools,
+          total: prevState.tools.total - 1,
+        },
+      }));
       setDeleteId(null);
     }
   }, [deleteToolResponse]);
@@ -95,18 +117,17 @@ function ProjectList() {
   useEffect(() => {
     if (toolsResponse) {
       setTools(toolsResponse.items);
-    }
-  }, [toolsResponse]);
-
-  function handlePagination(pageAction, value, table) {
-    if (table === "projects") {
-      setProjectPagination((prevState) => ({
+      setPagination((prevState) => ({
         ...prevState,
-        [pageAction]: value,
-        page: pageAction === "page" ? value : 1,
+        tools: {
+          page: toolsResponse.page,
+          perPage: toolsResponse.per_page,
+          total: toolsResponse.total,
+          totalPages: toolsResponse.total_pages,
+        },
       }));
     }
-  }
+  }, [toolsResponse]);
 
   function handleChange({ rowId: projectId, id, value }) {
     updateProject({
@@ -125,7 +146,9 @@ function ProjectList() {
 
   return (
     <section>
-      <Typography variant="h2">Dashboard</Typography>
+      <Typography variant="h2" sx={{ textAlign: "center" }}>
+        Dashboard
+      </Typography>
       <Grid container spacing={2}>
         <Grid size={6}>
           <Typography variant="h3">Projects</Typography>
@@ -133,14 +156,19 @@ function ProjectList() {
             cols={PROJECT_TABLE_COLUMNS}
             data={projects}
             loading={projectsLoading}
-            pagination={projectPagination}
+            pagination={pagination.projects}
             expandedTable={{
               title: "Tasks",
               cols: PROJECT_TASKS_COLUMNS,
               dataCol: "tasks",
             }}
-            onPage={(pageAction, value) =>
-              handlePagination(pageAction, value, "projects")
+            onPage={(pageData) =>
+              getProjects({
+                searchParams: [
+                  { key: "page", value: pageData.page },
+                  { key: "per_page", value: pageData.perPage },
+                ],
+              })
             }
             onRowClick={(id) => handleRowClick("projects", id)}
             onChange={handleChange}
@@ -154,6 +182,15 @@ function ProjectList() {
             loading={toolsLoading}
             onRowClick={(id) => handleRowClick("tools", id)}
             onDelete={(id) => handleDelete("tools", id)}
+            pagination={pagination.tools}
+            onPage={(pageData) =>
+              getTools({
+                searchParams: [
+                  { key: "page", value: pageData.page },
+                  { key: "per_page", value: pageData.perPage },
+                ],
+              })
+            }
           />
         </Grid>
       </Grid>
