@@ -20,7 +20,7 @@ import Grid from "@mui/material/Grid";
 import { TOOL_TABLE_COLS } from "../tools/toolsContants";
 
 function ProjectList() {
-  const [pagination, setPagination] = useState({
+  const [projectPagination, setProjectPagination] = useState({
     page: 1,
     perPage: 5,
     total: 0,
@@ -28,7 +28,7 @@ function ProjectList() {
   });
   const [projects, setProjects] = useState([]);
   const [tools, setTools] = useState([]);
-  const [deleteId,setDeleteId]=useState(null);
+  const [deleteId, setDeleteId] = useState(null);
 
   const {
     response: projectsResponse,
@@ -54,7 +54,7 @@ function ProjectList() {
   useEffect(() => {
     if (projectsResponse) {
       setProjects(projectsResponse.items);
-      setPagination({
+      setProjectPagination({
         page: projectsResponse.page,
         perPage: projectsResponse.per_page,
         total: projectsResponse.total,
@@ -77,18 +77,20 @@ function ProjectList() {
     }
   }, [updateProjectResponse]);
 
-  useEffect(()=>{
-    if(deleteToolResponse){
-      setTools(prevState=>prevState.filter(tool=>tool.id!==deleteId.tools))
-      setDeleteId(null)
+  useEffect(() => {
+    if (deleteToolResponse) {
+      setTools((prevState) =>
+        prevState.filter((tool) => tool.id !== deleteId.tools),
+      );
+      setDeleteId(null);
     }
-  },[deleteToolResponse])
+  }, [deleteToolResponse]);
 
-  useEffect(()=>{
-    if(deleteId?.tools){
-      deleteTool({urlParams:[{key:':toolId',value:deleteId.tools}]})
+  useEffect(() => {
+    if (deleteId?.tools) {
+      deleteTool({ urlParams: [{ key: ":toolId", value: deleteId.tools }] });
     }
-  },[deleteId])
+  }, [deleteId]);
 
   useEffect(() => {
     if (toolsResponse) {
@@ -96,11 +98,17 @@ function ProjectList() {
     }
   }, [toolsResponse]);
 
-  function handlePagination() {
-    console.log(pagination);
+  function handlePagination(pageAction, value, table) {
+    if (table === "projects") {
+      setProjectPagination((prevState) => ({
+        ...prevState,
+        [pageAction]: value,
+        page: pageAction === "page" ? value : 1,
+      }));
+    }
   }
 
-  function handleChange({rowId:projectId, id, value}) {
+  function handleChange({ rowId: projectId, id, value }) {
     updateProject({
       urlParams: [{ key: ":projectId", value: projectId }],
       [id]: value,
@@ -112,7 +120,7 @@ function ProjectList() {
   }
 
   function handleDelete(table, id) {
-    setDeleteId({[table]:id})
+    setDeleteId({ [table]: id });
   }
 
   return (
@@ -125,13 +133,15 @@ function ProjectList() {
             cols={PROJECT_TABLE_COLUMNS}
             data={projects}
             loading={projectsLoading}
-            pagination={pagination}
+            pagination={projectPagination}
             expandedTable={{
               title: "Tasks",
               cols: PROJECT_TASKS_COLUMNS,
               dataCol: "tasks",
             }}
-            onPage={handlePagination}
+            onPage={(pageAction, value) =>
+              handlePagination(pageAction, value, "projects")
+            }
             onRowClick={(id) => handleRowClick("projects", id)}
             onChange={handleChange}
           />

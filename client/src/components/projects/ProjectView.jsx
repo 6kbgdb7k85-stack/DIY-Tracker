@@ -9,6 +9,7 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import TableWrapper from "../../common/components/Table/TableWrapper";
 import {
+  PROJECT_PART_COLUMNS,
   PROJECT_TASKS_COLUMNS,
   PROJECT_TOOL_COLUMNS,
 } from "./projectConstants";
@@ -20,10 +21,23 @@ import AccessDenied from "../../common/components/AccessDenied";
 export default function ProjectView() {
   const { projectId } = useParams();
 
-  const { response: projectResponse, loading } = useFetch(`projects/${projectId}`);
+  const { response: projectResponse, loading } = useFetch(
+    `projects/${projectId}`,
+  );
+  const { response: parts, loading: partsLoading } = useFetch(
+    `projects/${projectId}/parts`,
+  );
 
-  const [deleteId,setDeleteId]=useState(null)
-  const [project,setProject]=useState(null)
+  const [deleteId, setDeleteId] = useState(null);
+  const [project, setProject] = useState(null);
+  const [pagination,setPagination]=useState({
+    parts:{
+      page:1,
+      perPage:5,
+      total:0,
+      totalPages:0
+    },
+  })
 
   const {
     response: deleteTaskResponse,
@@ -33,29 +47,43 @@ export default function ProjectView() {
 
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(projectResponse){
-      setProject(projectResponse)
+  useEffect(() => {
+    if (projectResponse) {
+      setProject(projectResponse);
     }
-  },[projectResponse])
+  }, [projectResponse]);
 
   useEffect(()=>{
-    if (deleteTaskResponse){
-      const newProject={...project}
-      newProject.tasks=newProject.tasks.filter(task=>task.id!==deleteId)
-      setProject(newProject)
-      setDeleteId(null)
+    if(parts){
+      setPagination(prevState=>({
+        ...prevState,
+        parts:{
+          page:parts.page,
+          perPage:parts.per_page,
+          total:parts.total,
+          totalPages:parts.total_pages
+        }
+      }))
     }
-  })
+  },[parts])
+
+  useEffect(() => {
+    if (deleteTaskResponse) {
+      const newProject = { ...project };
+      newProject.tasks = newProject.tasks.filter(
+        (task) => task.id !== deleteId,
+      );
+      setProject(newProject);
+      setDeleteId(null);
+    }
+  },[deleteTaskResponse]);
 
   function handleDelete(table, id) {
     if (table === "tasks") {
-      setDeleteId(id)
+      setDeleteId(id);
       deleteTask({ urlParams: [{ key: ":taskId", value: id }] });
     }
   }
-
-  
 
   if (loading) {
     return <h1>Project Loading</h1>;
@@ -83,7 +111,12 @@ export default function ProjectView() {
                     <Typography variant="h4">Parts</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
-                    <PartsTable />
+                    <TableWrapper
+                      cols={PROJECT_PART_COLUMNS}
+                      data={parts.items || []}
+                      loading={partsLoading}
+                      pagination={pagination.parts}
+                    />
                   </AccordionDetails>
                 </Accordion>
               </Grid>
