@@ -26,11 +26,11 @@ def check_resource_ownership():
     user_owned_endpoints = [
         "project",
         "project_task",
-        "project_part",
         "tool",
         "project_parts",
         "project_tools",
         "project_tasks",
+        "part"
     ]
     # resource classes to use based on endpoint
     user_owned_resources = {
@@ -50,6 +50,8 @@ def check_resource_ownership():
         entity_id = request.view_args.get(f"{resource_name}_id")
         resource = user_owned_resources.get(resource_name, None)
         # make sure route params match existing resources
+        print(entity_id)
+        print(resource)
         if not resource or not entity_id:
             return make_response({"error": "400 Bad Request"}, 400)
         entity = resource.query.filter(resource.id == entity_id).first()
@@ -271,7 +273,7 @@ class PartList(Resource):
         user_id = get_jwt_identity()
         task = Task.query.filter(Task.id == task_id).first()
         part = Part(**request_body)
-        part.tasks.append(task)
+        part.task=task
         part.user_id = user_id
         try:
             db.session.add(part)
@@ -289,13 +291,14 @@ class PartView(Resource):
     def patch(self, part_id):
         part = Part.query.filter(Part.id == part_id).first()
         request_body = request.get_json()
-        for k, v in request_body.items():
+        validatedData = PartSchema().load(request_body,partial=True,unknown=EXCLUDE)
+        for k, v in validatedData.items():
             if k != "id" and hasattr(part, k):
                 setattr(part, k, v)
         try:
             db.session.commit()
             return make_response(PartSchema().dump(part), 200)
-        except IntegrityError:
+        except IntegrityError as e:
             return make_response({"error": "400 Bad Request"})
 
     def delete(self, part_id):
@@ -400,7 +403,7 @@ api.add_resource(
 api.add_resource(
     PartView,
     "/parts/<int:part_id>",
-    endpoint="project_part",
+    endpoint="part",
 )
 api.add_resource(
     ToolList,
