@@ -8,6 +8,7 @@ import TableRow from "@mui/material/TableRow";
 import {
   PROJECT_TABLE_COLUMNS,
   PROJECT_TASKS_COLUMNS,
+  PROJECT_TASKS_SUBTABLE,
 } from "./projectConstants";
 import TableCell from "@mui/material/TableCell";
 import TablePagination from "@mui/material/TablePagination";
@@ -159,7 +160,7 @@ function ProjectList() {
             pagination={pagination.projects}
             expandedTable={{
               title: "Tasks",
-              cols: PROJECT_TASKS_COLUMNS,
+              cols: PROJECT_TASKS_SUBTABLE,
               dataCol: "tasks",
             }}
             onPage={(pageData) =>

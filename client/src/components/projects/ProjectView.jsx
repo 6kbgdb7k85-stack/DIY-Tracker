@@ -55,6 +55,14 @@ export default function ProjectView() {
     loading: deleteTaskLoading,
     runFetch: deleteTask,
   } = useFetch(`projects/${projectId}/tasks/:taskId`, "DELETE", false);
+  // secondary alias for clarity when updating
+  const updateTask = deleteTask;
+
+  const {
+    response: createTaskResponse,
+    loading: createTaskLoading,
+    runFetch: createTask
+  } = useFetch(`projects/${projectId}/tasks`,'POST',false);
 
   const navigate = useNavigate();
 
@@ -81,18 +89,48 @@ export default function ProjectView() {
   useEffect(() => {
     if (deleteTaskResponse) {
       const newProject = { ...project };
-      newProject.tasks = newProject.tasks.filter(
-        (task) => task.id !== deleteId,
-      );
+      if (deleteId) {
+        newProject.tasks = newProject.tasks.filter(
+          (task) => task.id !== deleteId,
+        );
+
+        setDeleteId(null);
+      } else {
+        newProject.tasks = newProject.tasks.map((task) => {
+          if (task.id === deleteTaskResponse.id) {
+            return deleteTaskResponse;
+          }
+          return task;
+        });
+      }
       setProject(newProject);
-      setDeleteId(null);
     }
   }, [deleteTaskResponse]);
+
+  useEffect(()=>{
+    if(createTaskResponse){
+      const newProject={...project}
+      newProject.tasks.push(createTaskResponse)
+      setProject(newProject)
+    }
+  })
 
   function handleDelete(table, id) {
     if (table === "tasks") {
       setDeleteId(id);
       deleteTask({ urlParams: [{ key: ":taskId", value: id }] });
+    }
+  }
+
+  function handleSave(row) {
+    if (row.id) {
+      updateTask({
+        ...row,
+        urlParams: [{ key: ":taskId", value: row.id }],
+        method: "PATCH",
+      });
+    } else {
+      createTask(row)
     }
   }
 
@@ -173,11 +211,13 @@ export default function ProjectView() {
                     cols={PROJECT_TASKS_COLUMNS}
                     data={project.tasks}
                     loading={loading}
-                    onAdd={() => navigate(`/projects/${projectId}/tasks/new`)}
+                    canAdd
+                    canEdit
                     onRowClick={(id) =>
                       navigate(`/projects/${projectId}/tasks/${id}`)
                     }
                     onDelete={(id) => handleDelete("tasks", id)}
+                    onSave={handleSave}
                   />
                 </AccordionDetails>
               </Accordion>

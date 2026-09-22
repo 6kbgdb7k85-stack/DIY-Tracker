@@ -85,7 +85,11 @@ export default function TableWrapper({
     });
     const newRow = {};
     cols.forEach((col) => {
-      newRow[col.id] = "";
+      if (col.type == FieldTypes.CHECKBOX) {
+        newRow[col.id] = false;
+      } else {
+        newRow[col.id] = "";
+      }
     });
     setRows((prevState) => [...prevState, newRow]);
   }

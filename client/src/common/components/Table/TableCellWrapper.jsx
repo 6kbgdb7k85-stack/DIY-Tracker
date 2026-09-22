@@ -45,7 +45,7 @@ export default function TableCellWrapper({
             {isEdit ? (
               <Checkbox
                 slotProps={{ input: { "aria-label": col.id } }}
-                checked={value}
+                checked={value||false}
                 onChange={handleChange}
               />
             ) : (
@@ -56,7 +56,7 @@ export default function TableCellWrapper({
       case FieldTypes.NUMBER:
         return (
           <>
-            {isEdit?<TextField type="number" id={col.id} name={col.name} value={value} onChange={handleChange}/>:<>{value}</>}
+            {isEdit?<TextField type="number" id={col.id} name={col.name} value={value||0} onChange={handleChange}/>:<>{value}</>}
           </>
         )
       default:
@@ -66,7 +66,7 @@ export default function TableCellWrapper({
               <TextField
                 id={col.id}
                 name={col.id}
-                value={value}
+                value={value||''}
                 onChange={handleChange}
               />
             ) : (
