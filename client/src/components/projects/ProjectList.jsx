@@ -100,7 +100,7 @@ function ProjectList() {
     console.log(pagination);
   }
 
-  function handleChange(projectId, id, value) {
+  function handleChange({rowId:projectId, id, value}) {
     updateProject({
       urlParams: [{ key: ":projectId", value: projectId }],
       [id]: value,

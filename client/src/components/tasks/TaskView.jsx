@@ -35,6 +35,18 @@ export default function TaskView() {
     runFetch: createTask,
   } = useFetch(`projects/${projectId}/tasks`, "POST", false);
 
+  const {
+    response: createPartResponse,
+    loading: createPartLoading,
+    runFetch: createPart,
+  } = useFetch(`projects/${projectId}/tasks/${taskId}/parts`, "POST", false);
+
+  const {
+    response: updatePartResponse,
+    loading: updatePartLoading,
+    runFetch: updatePart,
+  } = useFetch("parts/:partId", "PATCH", false);
+
   useEffect(() => {
     if (taskResponse) {
       setTask(taskResponse);
@@ -45,10 +57,10 @@ export default function TaskView() {
   useEffect(() => {
     if (createTaskResponse) {
       navigate(`/projects/${projectId}/tasks/${createTaskResponse.id}`);
-      setTask(createTaskResponse)
+      setTask(createTaskResponse);
       setEdit(false);
     }
-  },[createTaskResponse]);
+  }, [createTaskResponse]);
 
   useEffect(() => {
     if (edit && !task) {
@@ -59,6 +71,29 @@ export default function TaskView() {
       });
     }
   }, [edit]);
+
+  useEffect(()=>{
+    if(createPartResponse){
+      setTask(prevState=>({
+        ...prevState,
+        parts:[...prevState.parts,createPartResponse]
+      }))
+    }
+  },[createPartResponse])
+
+  useEffect(()=>{
+    if(updatePartResponse){
+      setTask(prevState=>({
+        ...prevState,
+        parts: prevState.parts.map(part=>{
+          if(part.id===updatePartResponse.id){
+            return updatePartResponse
+          }
+          return part
+        })
+      }))
+    }
+  },[updatePartResponse])
 
   function handleChange(e) {
     const newData = { ...task };
@@ -75,6 +110,17 @@ export default function TaskView() {
       createTask(task);
     } else {
       updateTask({ method: "PATCH", ...task });
+    }
+  }
+
+  function handleRowSave(row, table) {
+    if (table === "parts") {
+      const part = task.parts.find((part) => part.id === row.id);
+      if (part) {
+        updatePart({ urlParams: [{ key: ":partId", value: part.id }], ...row });
+      } else {
+        createPart(row);
+      }
     }
   }
 
@@ -159,7 +205,13 @@ export default function TaskView() {
           <Grid container spacing={2} sx={{ textAlign: "center" }}>
             <Grid size={6}>
               <Typography variant="h4">Parts</Typography>
-              <TableWrapper cols={TASK_PARTS_COLS} data={task.parts || []} />
+              <TableWrapper
+                cols={PART_TABLE_COLS}
+                data={task.parts}
+                canAdd
+                canEdit
+                onSave={(row) => handleRowSave(row, "parts")}
+              />
             </Grid>
             <Grid size={6}>
               <Typography variant="h4">Tools</Typography>

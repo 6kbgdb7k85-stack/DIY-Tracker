@@ -12,11 +12,15 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import SaveIcon from "@mui/icons-material/Save";
+import EditIcon from "@mui/icons-material/Edit";
+import CloseIcon from "@mui/icons-material/Close";
 import React, { useEffect, useState } from "react";
 import Collapse from "@mui/material/Collapse";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TableCellWrapper from "./TableCellWrapper";
+import { FieldTypes } from "../../constants/FieldTypes";
 
 /**
  * @param {Array} cols
@@ -39,13 +43,67 @@ export default function TableWrapper({
   onChange = () => {},
   onDelete,
   onAdd,
+  canAdd,
+  canEdit,
+  onSave,
 }) {
   const [open, setOpen] = useState({});
+  const [editRows, setEditRows] = useState([]);
+  const [rows, setRows] = useState(data);
+
+  useEffect(() => {
+    if (data) {
+      setRows(data);
+    }
+  }, [data]);
 
   function rowClick(event, row) {
     if (event.target.localName.toLowerCase() === "td") {
       onRowClick(row.id);
     }
+  }
+
+  function handleChange(e) {
+    if (e.type === FieldTypes.EDIT_CHECKBOX) {
+      console.log(e)
+      onChange({ ...e, rowId: rows[e.rowId].id });
+    } else {
+      setRows((prevState) =>
+        prevState.map((row, index) => {
+          if (index !== e.rowId) {
+            return row;
+          }
+          return { ...row, [e.id]: e.value };
+        }),
+      );
+    }
+  }
+
+  function addRow() {
+    setEditRows((prevState) => {
+      return [...prevState, rows.length];
+    });
+    const newRow = {};
+    cols.forEach((col) => {
+      newRow[col.id] = "";
+    });
+    setRows((prevState) => [...prevState, newRow]);
+  }
+
+  function handleSaveEdit(rowIndex) {
+    if (editRows?.includes(rowIndex)) {
+      onSave(rows[rowIndex]);
+      setEditRows((prevState) =>
+        prevState.filter((index) => index !== rowIndex),
+      );
+    } else {
+      setEditRows((prevState) => [...prevState, rowIndex]);
+    }
+  }
+
+  function handleCancel(rowIndex) {
+    setEditRows((prevState) => prevState.filter((index) => index !== rowIndex));
+    setRows(data);
   }
 
   return (
@@ -86,9 +144,9 @@ export default function TableWrapper({
                     </TableCell>
                   ))}
                   {onDelete ? <TableCell /> : <></>}
-                  {onAdd ? (
+                  {canAdd ? (
                     <TableCell sx={{ textAlign: "right" }}>
-                      <IconButton aria-label="add" onClick={onAdd}>
+                      <IconButton aria-label="add" onClick={addRow}>
                         <AddIcon />
                       </IconButton>
                     </TableCell>
@@ -98,7 +156,7 @@ export default function TableWrapper({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {data.map((rowData, idx) => {
+                {rows?.map((rowData, idx) => {
                   return (
                     <React.Fragment key={idx}>
                       <TableRow
@@ -137,14 +195,38 @@ export default function TableWrapper({
                           return (
                             <TableCellWrapper
                               key={`${idx}-${col.id}`}
-                              id={col.id}
-                              rowId={rowData["id"]}
+                              col={col}
+                              rowId={idx}
                               value={val}
-                              type={col.type}
-                              onChange={onChange}
+                              onChange={handleChange}
+                              isEdit={editRows?.includes(idx)}
                             />
                           );
                         })}
+                        {canEdit ? (
+                          <>
+                            <TableCell align="center">
+                              <IconButton onClick={() => handleSaveEdit(idx)}>
+                                {editRows?.includes(idx) ? (
+                                  <SaveIcon />
+                                ) : (
+                                  <EditIcon />
+                                )}
+                              </IconButton>
+                            </TableCell>
+                            {editRows.includes(idx) ? (
+                              <TableCell align="center">
+                                <IconButton onClick={() => handleCancel(idx)}>
+                                  <CloseIcon />
+                                </IconButton>
+                              </TableCell>
+                            ) : (
+                              <></>
+                            )}
+                          </>
+                        ) : (
+                          <></>
+                        )}
                         {onDelete ? (
                           <TableCell>
                             <IconButton
@@ -205,7 +287,7 @@ export default function TableWrapper({
                                             (xcol, xi) => (
                                               <TableCellWrapper
                                                 key={xdataIndex + "-" + xi}
-                                                type={xcol.type}
+                                                col={xcol}
                                                 value={xdata[xcol.id]}
                                               />
                                             ),
