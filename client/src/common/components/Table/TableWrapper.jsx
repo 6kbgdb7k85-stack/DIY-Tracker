@@ -317,8 +317,8 @@ export default function TableWrapper({
               count={pagination.total}
               rowsPerPage={pagination.perPage}
               page={pagination.page - 1}
-              onPageChange={onPage}
-              onRowsPerPageChange={onPage}
+              onPageChange={(e,newPage)=>onPage('page',newPage)}
+              onRowsPerPageChange={(e)=>onPage('perPage',parseInt(e.target.value,10))}
             />
           ) : (
             <></>
