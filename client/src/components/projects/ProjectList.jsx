@@ -46,6 +46,12 @@ function ProjectList() {
   } = useFetch("projects");
 
   const {
+    response: createProjectResponse,
+    loading: createProjectLoading,
+    runFetch: createProject,
+  } = useFetch("projects", "POST", false);
+
+  const {
     response: updateProjectResponse,
     loading: updateProjectLoading,
     runFetch: updateProject,
@@ -92,6 +98,12 @@ function ProjectList() {
       );
     }
   }, [updateProjectResponse]);
+
+  useEffect(() => {
+    if (createProjectResponse) {
+      setProjects((prevState) => [...prevState, createProjectResponse]);
+    }
+  }, [createProjectResponse]);
 
   useEffect(() => {
     if (deleteToolResponse) {
@@ -145,6 +157,19 @@ function ProjectList() {
     setDeleteId({ [table]: id });
   }
 
+  function handleSave(row, table) {
+    if (table === "projects") {
+      if (row.id) {
+        updateProject({
+          ...row,
+          urlParams: [{ key: ":projectId", value: row.id }],
+        });
+      } else {
+        createProject(row);
+      }
+    }
+  }
+
   return (
     <section>
       <Typography variant="h2" sx={{ textAlign: "center" }}>
@@ -171,8 +196,11 @@ function ProjectList() {
                 ],
               })
             }
+            canEdit
+            canAdd
             onRowClick={(id) => handleRowClick("projects", id)}
             onChange={handleChange}
+            onSave={(row) => handleSave(row, "projects")}
           />
         </Grid>
         <Grid size={6}>
