@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router";
 import useFetch from "../../common/utils/useFetch";
 import Grid from "@mui/material/Grid";
@@ -13,9 +13,6 @@ import {
   PROJECT_TASKS_COLUMNS,
   PROJECT_TOOL_COLUMNS,
 } from "./projectConstants";
-import PartsTable from "../parts/PartsTable";
-import ToolsTable from "../tools/ToolsTable";
-import Button from "@mui/material/Button";
 import AccessDenied from "../../common/components/AccessDenied";
 
 export default function ProjectView() {
@@ -24,20 +21,34 @@ export default function ProjectView() {
   const { response: projectResponse, loading } = useFetch(
     `projects/${projectId}`,
   );
-  const { response: parts, loading: partsLoading } = useFetch(
-    `projects/${projectId}/parts`,
-  );
+  const {
+    response: parts,
+    loading: partsLoading,
+    runFetch: getParts,
+  } = useFetch(`projects/${projectId}/parts`);
+
+  const {
+    response: tools,
+    loading: toolsLoading,
+    runFetch: getTools,
+  } = useFetch(`projects/${projectId}/tools`);
 
   const [deleteId, setDeleteId] = useState(null);
   const [project, setProject] = useState(null);
-  const [pagination,setPagination]=useState({
-    parts:{
-      page:1,
-      perPage:5,
-      total:0,
-      totalPages:0
+  const [pagination, setPagination] = useState({
+    parts: {
+      page: 1,
+      perPage: 5,
+      total: 0,
+      totalPages: 0,
     },
-  })
+    tools: {
+      page: 1,
+      perPage: 5,
+      total: 0,
+      totalPages: 0,
+    },
+  });
 
   const {
     response: deleteTaskResponse,
@@ -53,19 +64,19 @@ export default function ProjectView() {
     }
   }, [projectResponse]);
 
-  useEffect(()=>{
-    if(parts){
-      setPagination(prevState=>({
+  useEffect(() => {
+    if (parts) {
+      setPagination((prevState) => ({
         ...prevState,
-        parts:{
-          page:parts.page,
-          perPage:parts.per_page,
-          total:parts.total,
-          totalPages:parts.total_pages
-        }
-      }))
+        parts: {
+          page: parts.page,
+          perPage: parts.per_page,
+          total: parts.total,
+          totalPages: parts.total_pages,
+        },
+      }));
     }
-  },[parts])
+  }, [parts]);
 
   useEffect(() => {
     if (deleteTaskResponse) {
@@ -76,7 +87,7 @@ export default function ProjectView() {
       setProject(newProject);
       setDeleteId(null);
     }
-  },[deleteTaskResponse]);
+  }, [deleteTaskResponse]);
 
   function handleDelete(table, id) {
     if (table === "tasks") {
@@ -113,9 +124,17 @@ export default function ProjectView() {
                   <AccordionDetails>
                     <TableWrapper
                       cols={PROJECT_PART_COLUMNS}
-                      data={parts.items || []}
+                      data={parts?.items || []}
                       loading={partsLoading}
                       pagination={pagination.parts}
+                      onPage={(pageData) =>
+                        getParts({
+                          searchParams: [
+                            { key: "page", value: pageData.page },
+                            { key: "per_page", value: pageData.perPage },
+                          ],
+                        })
+                      }
                     />
                   </AccordionDetails>
                 </Accordion>
@@ -126,7 +145,20 @@ export default function ProjectView() {
                     <Typography variant="h4">Tools</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
-                    <ToolsTable cols={PROJECT_TOOL_COLUMNS} />
+                    <TableWrapper
+                      cols={PROJECT_TOOL_COLUMNS}
+                      data={tools?.items || []}
+                      loading={toolsLoading}
+                      pagination={pagination.tools}
+                      onPage={(pageData) =>
+                        getTools({
+                          searchParams: [
+                            { key: "page", value: pageData.page },
+                            { key: "per_page", value: pageData.perPage },
+                          ],
+                        })
+                      }
+                    />
                   </AccordionDetails>
                 </Accordion>
               </Grid>

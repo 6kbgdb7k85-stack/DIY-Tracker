@@ -21,19 +21,20 @@ export default function useFetch(url, method = "GET", onLoad = true) {
   }, []);
 
   function runFetch(body = {}) {
-    const { urlParams = [], ...payload } = body ?? {};
+    const { urlParams = [], searchParams = [], ...payload } = body ?? {};
+    console.log(searchParams)
 
     setLoading(true);
-    fetch(compileUrl(urlParams), compileFetchOptions(payload))
+    fetch(compileUrl(urlParams, searchParams), compileFetchOptions(payload))
       .then(async (r) => {
-        if(r.status===204){
-            return 'delete successful'
+        if (r.status === 204) {
+          return "delete successful";
         }
         const data = await r.json();
         if (!r.ok) {
           throw new Error(data.error);
         }
-        
+
         return data;
       })
       .then((data) => {
@@ -46,12 +47,20 @@ export default function useFetch(url, method = "GET", onLoad = true) {
       });
   }
 
-  function compileUrl(urlParams = []) {
+  function compileUrl(urlParams = [], searchParams = []) {
     let parsedUrl = "/api/" + url;
     if (urlParams.length) {
       urlParams.forEach((param) => {
         parsedUrl = parsedUrl.replace(param.key, param.value);
       });
+    }
+    
+    if(searchParams.length){
+      console.log('test')
+      parsedUrl+="?"
+      searchParams.forEach(param=>{
+        parsedUrl+=`&${param.key}=${param.value}`
+      })
     }
     return parsedUrl;
   }
