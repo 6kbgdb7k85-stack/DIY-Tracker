@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import AppBar from "@mui/material/AppBar";
-import "./App.css";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import {  Outlet, useLocation, useNavigate, useParams } from "react-router";
+import { Outlet, useNavigate, useParams } from "react-router";
 import useFetch from "./common/utils/useFetch";
 import Button from "@mui/material/Button";
 
@@ -13,7 +12,6 @@ function App() {
 
   const navigate = useNavigate();
   const {projectId,taskId,toolId} = useParams()
-  const location = useLocation()
 
   function returnToParentButton(){
     if(taskId){

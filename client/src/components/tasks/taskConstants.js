@@ -1,5 +1,12 @@
 import { FieldTypes } from "../../common/constants/FieldTypes";
-import { PART_TABLE_COLS } from "../parts/partsConstants";
+
+export const PART_TABLE_COLS = [
+  { id: "name", label: "Name" },
+  { id: "amount_required", label: "Units Required", type: FieldTypes.NUMBER},
+  { id: "amount_owned", label: "Units Owned", type: FieldTypes.NUMBER },
+  { id: "cost", label: "Cost per Unit", type: FieldTypes.NUMBER },
+  { id: "source", label: "Source" },
+];
 
 export const TASK_PARTS_COLS = [
     ...PART_TABLE_COLS,

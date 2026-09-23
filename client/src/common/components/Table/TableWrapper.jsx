@@ -21,7 +21,6 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TableCellWrapper from "./TableCellWrapper";
 import { FieldTypes } from "../../constants/FieldTypes";
-import TableFooter from "@mui/material/TableFooter";
 
 /**
  * @param {Array} cols

@@ -1,11 +1,20 @@
 import { FieldTypes } from "../../common/constants/FieldTypes";
-import { calculateRemainingCost, calculateValueFromSubComponents } from "../../common/utils/calculations";
+import {
+  calculateRemainingCost,
+  calculateValueFromSubComponents,
+} from "../../common/utils/calculations";
 
 export const PROJECT_TABLE_COLUMNS = [
   { id: "completed", label: "Completed", type: FieldTypes.EDIT_CHECKBOX },
   { id: "name", label: "Name" },
   { id: "description", label: "Description" },
-  {id:'tasks',label:'Remaining Costs',type:FieldTypes.CALCULATED, calculation:(cellData)=>`$${calculateValueFromSubComponents(cellData,'parts',calculateRemainingCost)+calculateValueFromSubComponents(cellData,'tools',calculateRemainingCost)}`}
+  {
+    id: "tasks",
+    label: "Remaining Costs",
+    type: FieldTypes.CALCULATED,
+    calculation: (cellData) =>
+      `$${calculateValueFromSubComponents(cellData, "parts", calculateRemainingCost) + calculateValueFromSubComponents(cellData, "tools", calculateRemainingCost)}`,
+  },
 ];
 
 export const PROJECT_TASKS_COLUMNS = [

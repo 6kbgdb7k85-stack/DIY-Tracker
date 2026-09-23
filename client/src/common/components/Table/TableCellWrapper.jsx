@@ -2,7 +2,7 @@ import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import CheckIcon from "@mui/icons-material/Check";
 import RemoveIcon from "@mui/icons-material/Remove";
-import React, { useState } from "react";
+import { useState } from "react";
 import TextField from "@mui/material/TextField";
 import { FieldTypes } from "../../constants/FieldTypes";
 import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
@@ -148,7 +148,6 @@ export default function TableCellWrapper({
             console.error("Column param 'calculation' must be a function to use type 'CALCULATED'")
             return <></>
           }
-          console.log(value)
           return <>{col.calculation(value)}</>
       default:
         return (

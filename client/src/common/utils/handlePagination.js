@@ -24,9 +24,6 @@ export function handleAddPagination(pageData, getCall) {
     { key: "page", value: pageData.page },
     { key: "perPage", value: pageData.perPage },
   ];
-  console.log("total:",pageData.total+1)
-  console.log("page:",pageData.page)
-  console.log("perPage:",pageData.perPage)
   if (pageData.total + 1 > pageData.page * pageData.perPage) {
     searchParams[0].value += 1;
   }

@@ -216,10 +216,10 @@ class TaskView(Resource):
     def patch(self, project_id, task_id):
         task = Task.query.filter(Task.id == task_id).first()
         request_body = request.get_json()
-        validatedData = TaskSchema(exclude=("project", "parts")).load(
+        validated_data = TaskSchema(exclude=("project", "parts","tools")).load(
             request_body, unknown=EXCLUDE, partial=True
         )
-        for k, v in validatedData.items():
+        for k, v in validated_data.items():
             if hasattr(task, k):
                 setattr(task, k, v)
         try:
@@ -375,7 +375,7 @@ class ToolView(Resource):
         if "add_task" in request_body:
             tool.tasks.append(Task.query.filter(Task.id==int(request_body["add_task"])).first())
         if "remove_task" in request_body:
-            tool.tasks = [task.id for task in tool.tasks if task.id != int(request_body["remove_task"])]
+            tool.tasks = [task for task in tool.tasks if task.id != int(request_body["remove_task"])]
         try:
             db.session.commit()
             return make_response(ToolSchema().dump(tool), 200)

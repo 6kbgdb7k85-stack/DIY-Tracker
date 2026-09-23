@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
  * @returns {Object,boolean,function,function}
  */
 
-//simplify fetch into a streamlined setup for repeated use
-//defaulting method to GET and onLoad to true so GET requests meant to run on load only need the url provided
+// simplify fetch into a streamlined setup for repeated use
+// defaulting method to GET and onLoad to true so GET requests meant to run on load only need the url provided
 export default function useFetch(url, method = "GET", onLoad = true) {
   const [loading, setLoading] = useState(onLoad);
   const [response, setResponse] = useState(null);
@@ -63,10 +63,10 @@ export default function useFetch(url, method = "GET", onLoad = true) {
     return parsedUrl;
   }
 
-  //compile options for fetch based on method and supplied body
+  // compile options for fetch based on method and supplied body
   function compileFetchOptions(body) {
     const { method: bodyMethod, ...requestBody } = body ?? {};
-    const compiledMethod = bodyMethod || method; //allows for using the same useFetch for multiple methods like get and patch depending on circumstance
+    const compiledMethod = bodyMethod || method; // allows for using the same useFetch for multiple methods like get and patch depending on circumstance
     const params = {
       method: compiledMethod,
       headers: {
@@ -90,5 +90,5 @@ export default function useFetch(url, method = "GET", onLoad = true) {
     }
   }
 
-  return { response, loading, runFetch, setResponse }; //returning setResponse for cases where component's useEffect is based on response
+  return { response, loading, runFetch, setResponse }; // returning setResponse for greater control when using response in useEffect blocks
 }
