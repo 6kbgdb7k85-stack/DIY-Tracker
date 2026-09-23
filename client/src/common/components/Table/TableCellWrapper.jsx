@@ -2,9 +2,10 @@ import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import CheckIcon from "@mui/icons-material/Check";
 import RemoveIcon from "@mui/icons-material/Remove";
-import React from "react";
+import React, { useState } from "react";
 import TextField from "@mui/material/TextField";
 import { FieldTypes } from "../../constants/FieldTypes";
+import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 
 export default function TableCellWrapper({
   col,
@@ -12,8 +13,12 @@ export default function TableCellWrapper({
   value,
   onChange,
   isEdit,
+  lookups,
 }) {
-  function handleChange(e) {
+  const filter = createFilterOptions();
+  const [inputValue, setInputValue] = useState(value || "");
+
+  function handleChange(e, eventValue) {
     let newValue;
     switch (col.type) {
       case FieldTypes.CHECKBOX:
@@ -21,7 +26,10 @@ export default function TableCellWrapper({
         newValue = e.target.checked;
         break;
       case FieldTypes.NUMBER:
-        newValue=Number(e.target.value);
+        newValue = Number(e.target.value);
+        break;
+      case FieldTypes.AUTOCOMPLETE:
+        newValue = eventValue;
         break;
       default:
         newValue = e.target.value;
@@ -29,15 +37,25 @@ export default function TableCellWrapper({
     onChange({ rowId, id: col.id, value: newValue, type: col.type });
   }
 
+  function handleInputChange(e, newInputValue) {
+    setInputValue(newInputValue);
+  }
+
+  function getLookups() {
+    return col.lookupName
+      ? lookups?.[col.lookupName] || []
+      : lookups?.[col.id] || [];
+  }
+
   function compileField() {
     switch (col.type) {
       case FieldTypes.EDIT_CHECKBOX:
         return (
-            <Checkbox
-              slotProps={{ input: { "aria-label": "isCompleted" } }}
-              checked={value}
-              onChange={handleChange}
-            />
+          <Checkbox
+            slotProps={{ input: { "aria-label": "isCompleted" } }}
+            checked={value}
+            onChange={handleChange}
+          />
         );
       case FieldTypes.CHECKBOX:
         return (
@@ -45,7 +63,7 @@ export default function TableCellWrapper({
             {isEdit ? (
               <Checkbox
                 slotProps={{ input: { "aria-label": col.id } }}
-                checked={value||false}
+                checked={value || false}
                 onChange={handleChange}
               />
             ) : (
@@ -56,9 +74,75 @@ export default function TableCellWrapper({
       case FieldTypes.NUMBER:
         return (
           <>
-            {isEdit?<TextField type="number" id={col.id} name={col.name} value={value||0} onChange={handleChange}/>:<>{value}</>}
+            {isEdit ? (
+              <TextField
+                type="number"
+                id={col.id}
+                name={col.name}
+                value={value || 0}
+                onChange={handleChange}
+              />
+            ) : (
+              <>{value}</>
+            )}
           </>
-        )
+        );
+      case FieldTypes.AUTOCOMPLETE:
+        return (
+          <>
+            {isEdit ? (
+              <Autocomplete
+                value={value}
+                inputValue={inputValue}
+                onInputChange={handleInputChange}
+                onChange={handleChange}
+                options={getLookups()}
+                filterOptions={(options, params) => {
+                  const filtered = filter(options, params);
+
+                  const { inputValue } = params;
+                  // Suggest the creation of a new value
+                  const isExisting = options.some(
+                    (option) => inputValue === option.label,
+                  );
+                  if (inputValue !== "" && !isExisting) {
+                    filtered.push({
+                      inputValue,
+                      label: `Add "${inputValue}"`,
+                    });
+                  }
+
+                  return filtered;
+                }}
+                getOptionLabel={(option) => {
+                  // Value selected with enter, right from the input
+                  if (typeof option === "string") {
+                    return option;
+                  }
+                  // Add "xxx" option created dynamically
+                  if (option.inputValue) {
+                    return option.inputValue;
+                  }
+                  // Regular option
+                  return option.label;
+                }}
+                renderOption={(props, option) => {
+                  const { ...optionProps } = props;
+                  return (
+                    <li key={option.id} {...optionProps}>
+                      {option.label}
+                    </li>
+                  );
+                }}
+                freeSolo
+                sx={{ width: 300 }}
+                renderInput={(params) => <TextField {...params} />}
+              />
+            ) : (
+              <>{value}</>
+            )}
+          </>
+        );
       default:
         return (
           <>
@@ -66,7 +150,7 @@ export default function TableCellWrapper({
               <TextField
                 id={col.id}
                 name={col.id}
-                value={value||''}
+                value={value || ""}
                 onChange={handleChange}
               />
             ) : (
@@ -77,9 +161,5 @@ export default function TableCellWrapper({
     }
   }
 
-  return (
-    <TableCell align="center">
-      {compileField()}
-    </TableCell>
-  )
+  return <TableCell align="center">{compileField()}</TableCell>;
 }

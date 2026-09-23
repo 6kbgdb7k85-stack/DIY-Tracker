@@ -14,7 +14,6 @@ function App() {
   const navigate = useNavigate();
   const {projectId,taskId,toolId} = useParams()
   const location = useLocation()
-  console.log(location)
 
   function returnToParentButton(){
     if(taskId){

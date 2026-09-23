@@ -3,4 +3,5 @@ export const FieldTypes = {
   TEXT: "TEXT",
   CHECKBOX: "CHECKBOX",
   EDIT_CHECKBOX: "EDIT_CHECKBOX",
+  AUTOCOMPLETE: "AUTOCOMPLETE",
 };

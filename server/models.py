@@ -1,6 +1,6 @@
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, post_load, validate
 
 from config import db, bcrypt
 
@@ -99,6 +99,10 @@ class TaskSchema(Schema):
     parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("task", "user"))))
     tools = fields.List(fields.Nested(lambda: ToolSchema(exclude=("user", "tasks"))))
 
+    @post_load
+    def make_task(self,data,**kwargs):
+        return Task(**data)
+
 
 class Part(db.Model):
     __tablename__ = "parts"
@@ -152,12 +156,12 @@ class Tool(db.Model):
 
 class ToolSchema(Schema):
     id = fields.Int(dump_only=True)
-    name = fields.String(required=True)
+    name = fields.String(required=True, validate=validate.Length(min=1,error="Name is required"))
     owned = fields.Bool()
-    cost = fields.Float()
+    cost = fields.Float(allow_none=True)
 
     user = fields.Nested(
-        lambda: UserSchema(exclude=("tools", "projects", "parts")), required=True
+        lambda: UserSchema(exclude=("tools", "projects", "parts")), dump_only=True
     )
     tasks = fields.List(
         fields.Nested(lambda: TaskSchema(exclude=("tools", "project", "parts")))

@@ -50,8 +50,6 @@ def check_resource_ownership():
         entity_id = request.view_args.get(f"{resource_name}_id")
         resource = user_owned_resources.get(resource_name, None)
         # make sure route params match existing resources
-        print(entity_id)
-        print(resource)
         if not resource or not entity_id:
             return make_response({"error": "400 Bad Request"}, 400)
         entity = resource.query.filter(resource.id == entity_id).first()
@@ -346,8 +344,12 @@ class ToolList(Resource):
     def post(self, project_id=None, task_id=None):
         user_id = get_jwt_identity()
         request_body = request.get_json()
-        tool = Tool(**request_body)
+        tool = Tool(**ToolSchema().load(request_body))
         tool.user_id = user_id
+        if task_id:
+            task = Task.query.filter(Task.id == task_id).first()
+            if task:
+                tool.tasks.append(task)
         try:
             db.session.add(tool)
             db.session.commit()
@@ -370,8 +372,11 @@ class ToolView(Resource):
         for k, v in validatedData.items():
             if hasattr(tool, k):
                 setattr(tool, k, v)
+        if "add_task" in request_body:
+            tool.tasks.append(Task.query.filter(Task.id==int(request_body["add_task"])).first())
+        if "remove_task" in request_body:
+            tool.tasks = [task.id for task in tool.tasks if task.id != int(request_body["remove_task"])]
         try:
-
             db.session.commit()
             return make_response(ToolSchema().dump(tool), 200)
         except IntegrityError:

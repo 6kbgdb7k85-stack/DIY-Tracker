@@ -22,7 +22,6 @@ export default function useFetch(url, method = "GET", onLoad = true) {
 
   function runFetch(body = {}) {
     const { urlParams = [], searchParams = [], ...payload } = body ?? {};
-    console.log(searchParams)
 
     setLoading(true);
     fetch(compileUrl(urlParams, searchParams), compileFetchOptions(payload))
@@ -56,7 +55,6 @@ export default function useFetch(url, method = "GET", onLoad = true) {
     }
     
     if(searchParams.length){
-      console.log('test')
       parsedUrl+="?"
       searchParams.forEach(param=>{
         parsedUrl+=`&${param.key}=${param.value}`
