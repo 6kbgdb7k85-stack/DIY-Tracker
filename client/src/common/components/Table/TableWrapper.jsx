@@ -359,7 +359,7 @@ export default function TableWrapper({
               count={pagination.total}
               rowsPerPage={pagination.perPage}
               page={pagination.page - 1}
-              onPageChange={(e, newPage) => onPage({ perPage: pagination.perPage, page: newPage })}
+              onPageChange={(e, newPage) => onPage({ perPage: pagination.perPage, page: newPage+1 })}
               onRowsPerPageChange={(e) =>
                 onPage({ perPage: parseInt(e.target.value, 10), page: 1 })
               }
