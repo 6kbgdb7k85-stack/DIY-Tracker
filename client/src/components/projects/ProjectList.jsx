@@ -19,6 +19,7 @@ import { useNavigate } from "react-router";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import { TOOL_TABLE_COLS } from "../tools/toolsContants";
+import { handleAddPagination, handleDeletePagination } from "../../common/utils/handlePagination";
 
 function ProjectList() {
   const [pagination, setPagination] = useState({
@@ -96,7 +97,16 @@ function ProjectList() {
 
   useEffect(() => {
     if (updateProjectResponse) {
-      getProjects();
+      if (deleteId) {
+        handleDeletePagination(pagination.projects, getProjects);
+      } else {
+        getProjects({
+          searchParams: [
+            { key: "page", value: pagination.projects.page },
+            { key: "per_page", value: pagination.projects.perPage },
+          ],
+        });
+      }
       setDeleteId(null);
       setUpdateProjectResponse(null);
     }
@@ -117,28 +127,15 @@ function ProjectList() {
   useEffect(() => {
     if (deleteToolResponse) {
       if (deleteId) {
-        setTools((prevState) =>
-          prevState.filter((tool) => tool.id !== deleteId.tools),
-        );
-        setPagination((prevState) => ({
-          ...prevState,
-          tools: {
-            ...prevState.tools,
-            total: prevState.tools.total - 1,
-          },
-        }));
+        handleDeletePagination(pagination.tools, getTools);
         setDeleteId(null);
-        getTools();
       } else {
-        setTools((prevState) =>
-          prevState.map((tool) => {
-            if (tool.id === deleteToolResponse.id) {
-              return deleteToolResponse;
-            } else {
-              return tool;
-            }
-          }),
-        );
+        getTools({
+          searchParams: [
+            { key: "page", value: pagination.tools.page },
+            { key: "per_page", value: pagination.tools.perPage },
+          ],
+        });
       }
       setDeleteToolResponse(null);
     }
@@ -169,12 +166,7 @@ function ProjectList() {
           },
         }));
       } else {
-        getTools({
-          searchParams: [
-            { key: "page", value: pagination.tools.page },
-            { key: "per_page", value: pagination.tools.perPage },
-          ],
-        });
+        handleAddPagination(pagination.tools,getTools)
       }
     }
   }, [toolsResponse]);
