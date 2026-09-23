@@ -87,7 +87,7 @@ class Task(db.Model):
 
 
 class TaskSchema(Schema):
-    id = fields.Int(dump_only=True)
+    id = fields.Int()
     name = fields.String(required=True)
     description = fields.String()
     time = fields.String(allow_none=True)

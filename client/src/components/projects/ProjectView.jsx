@@ -54,6 +54,7 @@ export default function ProjectView() {
     response: deleteTaskResponse,
     loading: deleteTaskLoading,
     runFetch: deleteTask,
+    setResponse: setDeleteTaskResponse,
   } = useFetch(`projects/${projectId}/tasks/:taskId`, "DELETE", false);
   // secondary alias for clarity when updating
   const updateTask = deleteTask;
@@ -61,8 +62,8 @@ export default function ProjectView() {
   const {
     response: createTaskResponse,
     loading: createTaskLoading,
-    runFetch: createTask
-  } = useFetch(`projects/${projectId}/tasks`,'POST',false);
+    runFetch: createTask,
+  } = useFetch(`projects/${projectId}/tasks`, "POST", false);
 
   const navigate = useNavigate();
 
@@ -93,7 +94,6 @@ export default function ProjectView() {
         newProject.tasks = newProject.tasks.filter(
           (task) => task.id !== deleteId,
         );
-
         setDeleteId(null);
       } else {
         newProject.tasks = newProject.tasks.map((task) => {
@@ -104,16 +104,18 @@ export default function ProjectView() {
         });
       }
       setProject(newProject);
+      setDeleteTaskResponse(null);
     }
   }, [deleteTaskResponse]);
 
-  useEffect(()=>{
-    if(createTaskResponse){
-      const newProject={...project}
-      newProject.tasks.push(createTaskResponse)
-      setProject(newProject)
+  useEffect(() => {
+    if (createTaskResponse) {
+      setProject((prevState) => ({
+        ...prevState,
+        tasks: [...prevState.tasks, createTaskResponse],
+      }));
     }
-  })
+  }, [createTaskResponse]);
 
   function handleDelete(table, id) {
     if (table === "tasks") {
@@ -130,7 +132,7 @@ export default function ProjectView() {
         method: "PATCH",
       });
     } else {
-      createTask(row)
+      createTask(row);
     }
   }
 

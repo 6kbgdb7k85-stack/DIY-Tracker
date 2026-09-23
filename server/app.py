@@ -366,7 +366,7 @@ class ToolView(Resource):
     def patch(self, tool_id):
         tool = Tool.query.filter(Tool.id == tool_id).first()
         request_body = request.get_json()
-        validatedData = ToolSchema(exclude=("user",)).load(
+        validatedData = ToolSchema(exclude=("user","tasks")).load(
             request_body, partial=True, unknown=EXCLUDE
         )
         for k, v in validatedData.items():
