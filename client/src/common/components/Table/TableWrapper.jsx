@@ -50,7 +50,7 @@ export default function TableWrapper({
 }) {
   const [open, setOpen] = useState({});
   const [editRows, setEditRows] = useState([]);
-  const [rows, setRows] = useState(data);
+  const [rows, setRows] = useState([]);
 
   useEffect(() => {
     if (data) {
