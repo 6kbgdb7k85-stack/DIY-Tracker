@@ -46,6 +46,7 @@ export default function TableWrapper({
   canAdd,
   canEdit,
   onSave,
+  lookups,
 }) {
   const [open, setOpen] = useState({});
   const [editRows, setEditRows] = useState([]);
@@ -69,7 +70,6 @@ export default function TableWrapper({
 
   function handleChange(e) {
     if (e.type === FieldTypes.EDIT_CHECKBOX) {
-      console.log(e);
       onChange({ ...e, rowId: rows[e.rowId].id });
     } else {
       setRows((prevState) =>
@@ -77,7 +77,25 @@ export default function TableWrapper({
           if (index !== e.rowId) {
             return row;
           }
-          return { ...row, [e.id]: e.value };
+          switch (e.type) {
+            case FieldTypes.AUTOCOMPLETE:
+              if (e.value?.id) {
+                const newRow = { ...row, id: e.value.id };
+                cols.forEach((col) => {
+                  newRow[col.id] = e.value[col.id];
+                });
+                return newRow;
+              } else {
+                return { ...row, [e.id]: e.value?.inputValue };
+              }
+            case FieldTypes.NUMBER:
+              if (!e.value) {
+                return { ...row, [e.id]: 0 };
+              }
+              return { ...row, [e.id]: Number(e.value) };
+            default:
+              return { ...row, [e.id]: e.value };
+          }
         }),
       );
     }
@@ -89,13 +107,17 @@ export default function TableWrapper({
     });
     const newRow = {};
     cols.forEach((col) => {
-      if (
-        col.type == FieldTypes.CHECKBOX ||
-        col.type === FieldTypes.EDIT_CHECKBOX
-      ) {
-        newRow[col.id] = false;
-      } else {
-        newRow[col.id] = "";
+      switch(col.type){
+        case FieldTypes.CHECKBOX:
+        case FieldTypes.EDIT_CHECKBOX:
+          newRow[col.id]=false
+          break;
+        case FieldTypes.NUMBER:
+          newRow[col.id]=0
+          break;
+        default:
+          newRow[col.id]=""
+          break;
       }
     });
     setRows((prevState) => [...prevState, newRow]);
@@ -211,17 +233,26 @@ export default function TableWrapper({
                               value={val}
                               onChange={handleChange}
                               isEdit={editRows?.includes(idx)}
+                              lookups={lookups}
                             />
                           );
                         })}
-                        {canEdit ? (
+                        {canEdit || canAdd ? (
                           <>
                             <TableCell align="center">
                               <IconButton onClick={() => handleSaveEdit(idx)}>
                                 {editRows?.includes(idx) ? (
                                   <SaveIcon />
                                 ) : (
-                                  <EditIcon />
+                                  <>
+                                    {canEdit ? (
+                                      <>
+                                        <EditIcon />
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </>
                                 )}
                               </IconButton>
                             </TableCell>
@@ -328,7 +359,7 @@ export default function TableWrapper({
               count={pagination.total}
               rowsPerPage={pagination.perPage}
               page={pagination.page - 1}
-              onPageChange={(e, newPage) => onPage({ perPage, page: newPage })}
+              onPageChange={(e, newPage) => onPage({ perPage: pagination.perPage, page: newPage })}
               onRowsPerPageChange={(e) =>
                 onPage({ perPage: parseInt(e.target.value, 10), page: 1 })
               }
