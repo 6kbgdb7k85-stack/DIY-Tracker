@@ -99,11 +99,6 @@ class TaskSchema(Schema):
     parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("task", "user"))))
     tools = fields.List(fields.Nested(lambda: ToolSchema(exclude=("user", "tasks"))))
 
-    @post_load
-    def make_task(self,data,**kwargs):
-        return Task(**data)
-
-
 class Part(db.Model):
     __tablename__ = "parts"
 

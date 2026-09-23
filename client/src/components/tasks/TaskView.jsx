@@ -1,24 +1,15 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useFetch from "../../common/utils/useFetch";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import AccessDenied from "../../common/components/AccessDenied";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import TableWrapper from "../../common/components/Table/TableWrapper";
-import { PART_TABLE_COLS } from "../parts/partsConstants";
-import { TOOL_TABLE_COLS } from "../tools/toolsContants";
-import { TASK_PARTS_COLS, TASK_TOOLS_COLS } from "./taskConstants";
-import TextField from "@mui/material/TextField";
-import Checkbox from "@mui/material/Checkbox";
-import Button from "@mui/material/Button";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import { PART_TABLE_COLS, TASK_TOOLS_COLS } from "./taskConstants";
 
 export default function TaskView() {
   const { projectId, taskId } = useParams();
-  const { pathname } = useLocation();
-  const isNew = pathname.includes("new");
 
-  const [edit, setEdit] = useState(isNew);
   const [task, setTask] = useState(null);
   const [tools, setTools] = useState([]);
   const [deleteId, setDeleteId] = useState(null);
@@ -30,12 +21,6 @@ export default function TaskView() {
     loading: taskLoading,
     runFetch: updateTask,
   } = useFetch(`projects/${projectId}/tasks/${taskId}`);
-
-  const {
-    response: createTaskResponse,
-    loading: createTaskLoading,
-    runFetch: createTask,
-  } = useFetch(`projects/${projectId}/tasks`, "POST", false);
 
   const {
     response: createPartResponse,
@@ -103,28 +88,9 @@ export default function TaskView() {
   useEffect(() => {
     if (taskResponse) {
       setTask(taskResponse);
-      setTools(taskResponse.tools)
-      setEdit(false);
+      setTools(taskResponse.tools);
     }
   }, [taskResponse]);
-
-  useEffect(() => {
-    if (createTaskResponse) {
-      navigate(`/projects/${projectId}/tasks/${createTaskResponse.id}`);
-      setTask(createTaskResponse);
-      setEdit(false);
-    }
-  }, [createTaskResponse]);
-
-  useEffect(() => {
-    if (edit && !task) {
-      setTask({
-        name: "",
-        description: "",
-        completed: false,
-      });
-    }
-  }, [edit]);
 
   useEffect(() => {
     if (createPartResponse) {
@@ -158,24 +124,6 @@ export default function TaskView() {
     }
   }, [updatePartResponse]);
 
-  function handleChange(e) {
-    const newData = { ...task };
-    if (e.target.type === "checkbox") {
-      newData[e.target.id] = e.target.checked;
-    } else {
-      newData[e.target.id] = e.target.value;
-    }
-    setTask(newData);
-  }
-
-  function handleSave() {
-    if (isNew) {
-      createTask(task);
-    } else {
-      updateTask({ method: "PATCH", ...task });
-    }
-  }
-
   function handleRowSave(row, table) {
     if (table === "parts") {
       const part = task.parts.find((part) => part.id === row.id);
@@ -201,58 +149,6 @@ export default function TaskView() {
     return <>Loading...</>;
   }
 
-  if (edit) {
-    return (
-      <Grid container sx={{ textAlign: "center" }}>
-        <Grid size={12}>
-          <TextField
-            label="Name"
-            id="name"
-            value={task.name}
-            onChange={handleChange}
-          />
-        </Grid>
-        <Grid size={12}>
-          <TextField
-            label="Description"
-            id="description"
-            onChange={handleChange}
-            value={task.description}
-          />
-        </Grid>
-        <Grid size={12}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                id="completed"
-                checked={task.complete}
-                onChange={handleChange}
-                slotProps={{
-                  input: { "aria-label": "completed" },
-                }}
-              />
-            }
-            label="Complete?"
-            labelPlacement="start"
-          />
-        </Grid>
-        <Button variant="contained" onClick={handleSave}>
-          Save
-        </Button>
-        <Button
-          variant="text"
-          color="secondary"
-          onClick={() => {
-            setEdit(false);
-            setTask(taskResponse);
-          }}
-        >
-          Cancel
-        </Button>
-      </Grid>
-    );
-  }
-
   return (
     <>
       {task ? (
@@ -264,11 +160,8 @@ export default function TaskView() {
             {task.description}
           </Typography>
           <Typography variant="body1" sx={{ textAlign: "center" }}>
-            {task.complete ? "Completed" : "Pending"}
+            {task.completed ? `Completed - Time: ${task.time}` : `Pending - Estimated Time: ${task.time}`}
           </Typography>
-          <Button variant="contained" onClick={() => setEdit(true)}>
-            Edit
-          </Button>
           <Grid container spacing={2} sx={{ textAlign: "center" }}>
             <Grid size={6}>
               <Typography variant="h4">Parts</Typography>

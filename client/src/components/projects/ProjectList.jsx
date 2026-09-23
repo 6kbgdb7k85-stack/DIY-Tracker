@@ -1,24 +1,13 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useFetch from "../../common/utils/useFetch";
-import Table from "@mui/material/Table";
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
-import TableBody from "@mui/material/TableBody";
-import TableRow from "@mui/material/TableRow";
 import {
-  PROJECT_TABLE_COLUMNS,
-  PROJECT_TASKS_COLUMNS,
-  PROJECT_TASKS_SUBTABLE,
+  PROJECT_TABLE_COLUMNS, PROJECT_TASKS_SUBTABLE
 } from "./projectConstants";
-import TableCell from "@mui/material/TableCell";
-import TablePagination from "@mui/material/TablePagination";
-import Skeleton from "@mui/material/Skeleton";
-import TableHead from "@mui/material/TableHead";
 import TableWrapper from "../../common/components/Table/TableWrapper";
 import { useNavigate } from "react-router";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
-import { TOOL_TABLE_COLS } from "../tools/toolsContants";
+import { TOOL_TABLE_COLS } from "../tools/toolsConstants";
 import { handleAddPagination, handleDeletePagination } from "../../common/utils/handlePagination";
 
 function ProjectList() {
@@ -58,7 +47,7 @@ function ProjectList() {
     runFetch: updateProject,
     setResponse: setUpdateProjectResponse,
   } = useFetch("projects/:projectId", "PATCH", false);
-  //secondary alias for deleting projects
+  // secondary alias for deleting projects
   const deleteProject = updateProject;
 
   const {
@@ -66,7 +55,7 @@ function ProjectList() {
     loading: toolsLoading,
     runFetch: getTools,
   } = useFetch("/tools");
-  //secondary alias for clarity when creating tool
+  // secondary alias for clarity when creating tool
   const createTool = getTools;
 
   const {

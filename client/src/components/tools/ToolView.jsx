@@ -1,24 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import useFetch from "../../common/utils/useFetch";
 import TableWrapper from "../../common/components/Table/TableWrapper";
 import CheckIcon from "@mui/icons-material/Check";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { TOOL_TASK_COLS } from "./toolsContants";
+import { TOOL_TASK_COLS } from "./toolsConstants";
 import AccessDenied from "../../common/components/AccessDenied";
 import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
-import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Grid";
 import InputAdornment from "@mui/material/InputAdornment";
 
 export default function ToolView() {
   const { toolId } = useParams();
-
-  const { pathname } = useLocation();
 
   const [edit, setEdit] = useState(false);
 

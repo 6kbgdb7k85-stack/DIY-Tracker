@@ -14,7 +14,6 @@ import {
   PROJECT_TOOL_COLUMNS,
 } from "./projectConstants";
 import AccessDenied from "../../common/components/AccessDenied";
-import TableCell from "@mui/material/TableCell";
 import { calculateRemainingCost } from "../../common/utils/calculations";
 
 export default function ProjectView() {
