@@ -29,7 +29,6 @@ createRoot(document.getElementById("root")).render(
               <Route path=":projectId/tasks/:taskId" element={<TaskView />}/>
             </Route>
             <Route path="tools/:toolId" element={<ToolView />}/>
-            <Route path="tools/new" element={<ToolView/>}/>
           </Route>
         </Route>
       </Routes>

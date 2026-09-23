@@ -20,19 +20,9 @@ export default function ToolView() {
 
   const { pathname } = useLocation();
 
-  const isNew = pathname.includes("new");
+  const [edit, setEdit] = useState(false);
 
-  const [edit, setEdit] = useState(isNew);
-
-  const [tool, setTool] = useState(
-    isNew
-      ? {
-          name: "",
-          owned: false,
-          cost: 0,
-        }
-      : null,
-  );
+  const [tool, setTool] = useState(null);
 
   const navigate = useNavigate();
 
@@ -81,14 +71,10 @@ export default function ToolView() {
   }
 
   function handleSave() {
-    if (isNew) {
-      createTool(tool);
-    } else {
-      updateTool({
-        ...tool,
-        method: "PATCH",
-      });
-    }
+    updateTool({
+      ...tool,
+      method: "PATCH",
+    });
   }
 
   if (toolLoading || newToolLoading) {
@@ -155,14 +141,10 @@ export default function ToolView() {
             </Button>
           </Grid>
         </Grid>
-        {!isNew ? (
-          <>
-            <h3>Tasks Used In</h3>
-            <TableWrapper cols={TOOL_TASK_COLS} data={tool?.tasks || []} />
-          </>
-        ) : (
-          <></>
-        )}
+        <>
+          <h3>Tasks Used In</h3>
+          <TableWrapper cols={TOOL_TASK_COLS} data={tool?.tasks || []} />
+        </>
       </>
     );
   }
@@ -172,7 +154,7 @@ export default function ToolView() {
       {tool ? (
         <>
           <h2>
-            {tool.name} <Button onClick={()=>setEdit(true)}>Edit</Button>
+            {tool.name} <Button onClick={() => setEdit(true)}>Edit</Button>
           </h2>
           <p>Owned?: {tool.owned ? <CheckIcon /> : <RemoveIcon />}</p>
           <p>Cost: {tool.cost}</p>

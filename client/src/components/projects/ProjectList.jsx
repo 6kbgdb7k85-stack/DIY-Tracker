@@ -55,18 +55,27 @@ function ProjectList() {
     response: updateProjectResponse,
     loading: updateProjectLoading,
     runFetch: updateProject,
+    setResponse: setUpdateProjectResponse,
   } = useFetch("projects/:projectId", "PATCH", false);
+  //secondary alias for deleting projects
+  const deleteProject = updateProject;
 
   const {
     response: toolsResponse,
     loading: toolsLoading,
     runFetch: getTools,
   } = useFetch("/tools");
+  //secondary alias for clarity when creating tool
+  const createTool = getTools;
+
   const {
     response: deleteToolResponse,
     loading: deleteToolLoading,
     runFetch: deleteTool,
+    setResponse: setDeleteToolResponse,
   } = useFetch("/tools/:toolId", "DELETE", false);
+  // secondary alias for clarity when updating
+  const updateTool = deleteTool;
 
   const navigate = useNavigate();
 
@@ -87,58 +96,86 @@ function ProjectList() {
 
   useEffect(() => {
     if (updateProjectResponse) {
-      setProjects((prevState) =>
-        prevState.map((project) => {
-          if (project.id == updateProjectResponse.id) {
-            return updateProjectResponse;
-          } else {
-            return project;
-          }
-        }),
-      );
+      getProjects();
+      setDeleteId(null);
+      setUpdateProjectResponse(null);
     }
   }, [updateProjectResponse]);
 
   useEffect(() => {
     if (createProjectResponse) {
+      getProjects({
+        searchParams: [
+          { key: "page", value: pagination.projects.page },
+          { key: "per_page", value: pagination.projects.perPage },
+        ],
+      });
       setProjects((prevState) => [...prevState, createProjectResponse]);
     }
   }, [createProjectResponse]);
 
   useEffect(() => {
     if (deleteToolResponse) {
-      setTools((prevState) =>
-        prevState.filter((tool) => tool.id !== deleteId.tools),
-      );
-      setPagination((prevState) => ({
-        ...prevState,
-        tools: {
-          ...prevState.tools,
-          total: prevState.tools.total - 1,
-        },
-      }));
-      setDeleteId(null);
+      if (deleteId) {
+        setTools((prevState) =>
+          prevState.filter((tool) => tool.id !== deleteId.tools),
+        );
+        setPagination((prevState) => ({
+          ...prevState,
+          tools: {
+            ...prevState.tools,
+            total: prevState.tools.total - 1,
+          },
+        }));
+        setDeleteId(null);
+        getTools();
+      } else {
+        setTools((prevState) =>
+          prevState.map((tool) => {
+            if (tool.id === deleteToolResponse.id) {
+              return deleteToolResponse;
+            } else {
+              return tool;
+            }
+          }),
+        );
+      }
+      setDeleteToolResponse(null);
     }
   }, [deleteToolResponse]);
 
   useEffect(() => {
     if (deleteId?.tools) {
       deleteTool({ urlParams: [{ key: ":toolId", value: deleteId.tools }] });
+    } else if (deleteId?.projects) {
+      deleteProject({
+        urlParams: [{ key: ":projectId", value: deleteId.projects }],
+        method: "DELETE",
+      });
     }
   }, [deleteId]);
 
   useEffect(() => {
     if (toolsResponse) {
-      setTools(toolsResponse.items);
-      setPagination((prevState) => ({
-        ...prevState,
-        tools: {
-          page: toolsResponse.page,
-          perPage: toolsResponse.per_page,
-          total: toolsResponse.total,
-          totalPages: toolsResponse.total_pages,
-        },
-      }));
+      if (toolsResponse.items) {
+        setTools(toolsResponse.items);
+        setPagination((prevState) => ({
+          ...prevState,
+          tools: {
+            page: toolsResponse.page,
+            perPage: toolsResponse.per_page,
+            total: toolsResponse.total,
+            totalPages: toolsResponse.total_pages,
+          },
+        }));
+      } else {
+        getTools({
+          searchParams: [
+            { key: "page", value: pagination.tools.page },
+            { key: "per_page", value: pagination.tools.perPage },
+          ],
+        });
+      }
     }
   }, [toolsResponse]);
 
@@ -166,6 +203,19 @@ function ProjectList() {
         });
       } else {
         createProject(row);
+      }
+    } else if (table === "tools") {
+      if (row.id) {
+        updateTool({
+          ...row,
+          urlParams: [{ key: ":toolId", value: row.id }],
+          method: "PATCH",
+        });
+      } else {
+        createTool({
+          ...row,
+          method: "POST",
+        });
       }
     }
   }
@@ -201,6 +251,7 @@ function ProjectList() {
             onRowClick={(id) => handleRowClick("projects", id)}
             onChange={handleChange}
             onSave={(row) => handleSave(row, "projects")}
+            onDelete={(id) => handleDelete("projects", id)}
           />
         </Grid>
         <Grid size={6}>
@@ -220,6 +271,9 @@ function ProjectList() {
                 ],
               })
             }
+            canAdd
+            canEdit
+            onSave={(row) => handleSave(row, "tools")}
           />
         </Grid>
       </Grid>
