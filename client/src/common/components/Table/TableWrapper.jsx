@@ -21,6 +21,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TableCellWrapper from "./TableCellWrapper";
 import { FieldTypes } from "../../constants/FieldTypes";
+import TableFooter from "@mui/material/TableFooter";
 
 /**
  * @param {Array} cols
@@ -47,6 +48,7 @@ export default function TableWrapper({
   canEdit,
   onSave,
   lookups,
+  totals,
 }) {
   const [open, setOpen] = useState({});
   const [editRows, setEditRows] = useState([]);
@@ -107,17 +109,20 @@ export default function TableWrapper({
     });
     const newRow = {};
     cols.forEach((col) => {
-      switch(col.type){
+      switch (col.type) {
         case FieldTypes.CHECKBOX:
         case FieldTypes.EDIT_CHECKBOX:
-          newRow[col.id]=false
+          newRow[col.id] = false;
           break;
         case FieldTypes.NUMBER:
-          newRow[col.id]=0
+          newRow[col.id] = 0;
           break;
         default:
-          newRow[col.id]=""
+          newRow[col.id] = "";
           break;
+      }
+      if(expandedTable?.dataCol===col.id){
+        newRow[col.id]=[]
       }
     });
     setRows((prevState) => [...prevState, newRow]);
@@ -349,6 +354,26 @@ export default function TableWrapper({
                     </React.Fragment>
                   );
                 })}
+                {totals ? (<>
+                    {totals.map((total,index)=>{
+                      if (index===0){
+                        return (
+                          <TableRow>
+                            <TableCell rowSpan={totals.length} colSpan={cols.length-2}/>
+                            <TableCell component="th" scope="row">{total.header}</TableCell>
+                            <TableCell align="right">{total.value}</TableCell>
+                          </TableRow>
+                        )
+                      }else{
+                        return (
+                          <TableRow>
+                            <TableCell component="th" scope="row">{total.header}</TableCell>
+                            <TableCell align="right">{total.value}</TableCell>
+                          </TableRow>
+                        )
+                      }
+                    })}
+                </>) : <></>}
               </TableBody>
             </Table>
           </TableContainer>
@@ -359,7 +384,9 @@ export default function TableWrapper({
               count={pagination.total}
               rowsPerPage={pagination.perPage}
               page={pagination.page - 1}
-              onPageChange={(e, newPage) => onPage({ perPage: pagination.perPage, page: newPage+1 })}
+              onPageChange={(e, newPage) =>
+                onPage({ perPage: pagination.perPage, page: newPage + 1 })
+              }
               onRowsPerPageChange={(e) =>
                 onPage({ perPage: parseInt(e.target.value, 10), page: 1 })
               }

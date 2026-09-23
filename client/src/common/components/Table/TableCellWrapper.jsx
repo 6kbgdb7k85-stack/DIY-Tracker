@@ -143,6 +143,13 @@ export default function TableCellWrapper({
             )}
           </>
         );
+        case FieldTypes.CALCULATED:
+          if (typeof col.calculation !== "function"){
+            console.error("Column param 'calculation' must be a function to use type 'CALCULATED'")
+            return <></>
+          }
+          console.log(value)
+          return <>{col.calculation(value)}</>
       default:
         return (
           <>
