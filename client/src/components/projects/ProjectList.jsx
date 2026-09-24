@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
 import useFetch from "../../common/utils/useFetch";
 import {
-  PROJECT_TABLE_COLUMNS, PROJECT_TASKS_SUBTABLE
+  PROJECT_TABLE_COLUMNS,
+  PROJECT_TASKS_SUBTABLE,
 } from "./projectConstants";
 import TableWrapper from "../../common/components/Table/TableWrapper";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate, useOutletContext } from "react-router";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import { TOOL_TABLE_COLS } from "../tools/toolsConstants";
-import { handleAddPagination, handleDeletePagination } from "../../common/utils/handlePagination";
+import {
+  handleAddPagination,
+  handleDeletePagination,
+} from "../../common/utils/handlePagination";
 
 function ProjectList() {
+  const { setHeader } = useOutletContext();
   const [pagination, setPagination] = useState({
     projects: {
       page: 1,
@@ -28,6 +33,8 @@ function ProjectList() {
   const [projects, setProjects] = useState([]);
   const [tools, setTools] = useState([]);
   const [deleteId, setDeleteId] = useState(null);
+
+  const { pathname } = useLocation();
 
   const {
     response: projectsResponse,
@@ -68,6 +75,10 @@ function ProjectList() {
   const updateTool = deleteTool;
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setHeader("Dashboard");
+  }, []);
 
   useEffect(() => {
     if (projectsResponse) {
@@ -155,7 +166,7 @@ function ProjectList() {
           },
         }));
       } else {
-        handleAddPagination(pagination.tools,getTools)
+        handleAddPagination(pagination.tools, getTools);
       }
     }
   }, [toolsResponse]);
@@ -168,7 +179,7 @@ function ProjectList() {
   }
 
   function handleRowClick(table, id) {
-    navigate(`/${table}/${id}`);
+    navigate(`/${table}/${id}`, { state: { prevLocation: pathname } });
   }
 
   function handleDelete(table, id) {
@@ -203,11 +214,8 @@ function ProjectList() {
 
   return (
     <section>
-      <Typography variant="h2" sx={{ textAlign: "center" }}>
-        Dashboard
-      </Typography>
       <Grid container spacing={2}>
-        <Grid size={6}>
+        <Grid size={{xs:12,lg:6}}>
           <Typography variant="h3">Projects</Typography>
           <TableWrapper
             cols={PROJECT_TABLE_COLUMNS}
@@ -235,7 +243,7 @@ function ProjectList() {
             onDelete={(id) => handleDelete("projects", id)}
           />
         </Grid>
-        <Grid size={6}>
+        <Grid size={{xs:12,lg:6}}>
           <Typography variant="h3">Tools</Typography>
           <TableWrapper
             cols={TOOL_TABLE_COLS}
