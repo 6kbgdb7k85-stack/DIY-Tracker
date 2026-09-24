@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import useFetch from "../../common/utils/useFetch";
-import { useNavigate, useParams } from "react-router";
+import {
+  useLocation,
+  useNavigate,
+  useOutletContext,
+  useParams,
+} from "react-router";
 import AccessDenied from "../../common/components/AccessDenied";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
@@ -8,6 +13,7 @@ import TableWrapper from "../../common/components/Table/TableWrapper";
 import { PART_TABLE_COLS, TASK_TOOLS_COLS } from "./taskConstants";
 
 export default function TaskView() {
+  const { setHeader } = useOutletContext();
   const { projectId, taskId } = useParams();
 
   const [task, setTask] = useState(null);
@@ -15,6 +21,7 @@ export default function TaskView() {
   const [deleteId, setDeleteId] = useState(null);
 
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const {
     response: taskResponse,
@@ -56,6 +63,10 @@ export default function TaskView() {
   } = useFetch(`tools/:toolId`, "PATCH", false);
 
   useEffect(() => {
+    setHeader("Task View");
+  }, []);
+
+  useEffect(() => {
     if (updateToolResponse) {
       if (deleteId) {
         setTools((prevState) =>
@@ -89,6 +100,7 @@ export default function TaskView() {
     if (taskResponse) {
       setTask(taskResponse);
       setTools(taskResponse.tools);
+      setHeader(taskResponse.name);
     }
   }, [taskResponse]);
 
@@ -145,6 +157,12 @@ export default function TaskView() {
     }
   }
 
+  function handleRowClick(id, table) {
+    if (table === "tools") {
+      navigate(`/tools/${id}`, { state: { prevLocation: pathname } });
+    }
+  }
+
   if (taskLoading) {
     return <>Loading...</>;
   }
@@ -153,17 +171,16 @@ export default function TaskView() {
     <>
       {task ? (
         <>
-          <Typography variant="h3" sx={{ textAlign: "center" }}>
-            {task.name}
-          </Typography>
           <Typography variant="body1" sx={{ textAlign: "center" }}>
             {task.description}
           </Typography>
           <Typography variant="body1" sx={{ textAlign: "center" }}>
-            {task.completed ? `Completed - Time: ${task.time}` : `Pending - Estimated Time: ${task.time}`}
+            {task.completed
+              ? `Completed - Time: ${task.time}`
+              : `Pending - Estimated Time: ${task.time}`}
           </Typography>
           <Grid container spacing={2} sx={{ textAlign: "center" }}>
-            <Grid size={6}>
+            <Grid size={{ lg: 6, xs: 12 }}>
               <Typography variant="h4">Parts</Typography>
               <TableWrapper
                 cols={PART_TABLE_COLS}
@@ -174,7 +191,7 @@ export default function TaskView() {
                 onDelete={(rowId) => setDeleteId({ parts: rowId })}
               />
             </Grid>
-            <Grid size={6}>
+            <Grid size={{ lg: 6, xs: 12 }}>
               <Typography variant="h4">Tools</Typography>
               <TableWrapper
                 cols={TASK_TOOLS_COLS}
@@ -190,6 +207,7 @@ export default function TaskView() {
                 canAdd
                 onSave={(row) => handleRowSave(row, "tools")}
                 onDelete={(rowId) => setDeleteId({ tools: rowId })}
+                onRowClick={(rowId) => handleRowClick(rowId, "tools")}
               />
             </Grid>
           </Grid>

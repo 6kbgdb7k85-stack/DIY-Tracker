@@ -1,7 +1,8 @@
-import { Outlet } from "react-router";
+import { Outlet, useOutletContext } from "react-router";
 
 const ProjectLayout = () => {
-  return <Outlet />;
+  const appContext = useOutletContext()
+  return <Outlet context={appContext} />;
 };
 
 export default ProjectLayout;

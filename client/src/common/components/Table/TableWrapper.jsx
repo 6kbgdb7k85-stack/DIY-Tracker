@@ -382,7 +382,7 @@ export default function TableWrapper({
                     {totals.map((total, index) => {
                       if (index === 0) {
                         return (
-                          <TableRow>
+                          <TableRow key={`totals-${index}`}>
                             <TableCell
                               rowSpan={totals.length}
                               colSpan={cols.length - 2}
@@ -395,7 +395,7 @@ export default function TableWrapper({
                         );
                       } else {
                         return (
-                          <TableRow>
+                          <TableRow key={`totals-${index}`}>
                             <TableCell component="th" scope="row">
                               {total.header}
                             </TableCell>

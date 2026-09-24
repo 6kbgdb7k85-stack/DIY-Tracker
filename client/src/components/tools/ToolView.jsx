@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useOutletContext, useParams } from "react-router";
 import useFetch from "../../common/utils/useFetch";
 import TableWrapper from "../../common/components/Table/TableWrapper";
 import CheckIcon from "@mui/icons-material/Check";
@@ -12,8 +12,11 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import InputAdornment from "@mui/material/InputAdornment";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 export default function ToolView() {
+  const { setHeader } = useOutletContext();
   const { toolId } = useParams();
 
   const [edit, setEdit] = useState(false);
@@ -34,9 +37,14 @@ export default function ToolView() {
   } = useFetch("tools", "POST", false);
 
   useEffect(() => {
+    setHeader("Tool View");
+  }, []);
+
+  useEffect(() => {
     if (toolResponse) {
       setTool(toolResponse);
       setEdit(false);
+      setHeader(toolResponse.name);
     }
   }, [toolResponse]);
 
@@ -149,12 +157,20 @@ export default function ToolView() {
     <>
       {tool ? (
         <>
-          <h2>
-            {tool.name} <Button onClick={() => setEdit(true)}>Edit</Button>
-          </h2>
-          <p>Owned?: {tool.owned ? <CheckIcon /> : <RemoveIcon />}</p>
-          <p>Cost: {tool.cost}</p>
-          <h3>Tasks Used In</h3>
+          <Typography variant="body1" sx={{ textAlign: "center" }}>
+            Owned?: {tool.owned ? <CheckIcon /> : <RemoveIcon />}
+          </Typography>
+          <Typography variant="body1" sx={{ textAlign: "center" }}>
+            Cost: {tool.cost}
+          </Typography>
+          <Box sx={{ textAlign: "center" }}>
+            <Button variant="outlined" onClick={() => setEdit(true)}>
+              Edit
+            </Button>
+          </Box>
+          <Typography variant="h4" sx={{ textAlign: "center" }}>
+            Tasks
+          </Typography>
           <TableWrapper cols={TOOL_TASK_COLS} data={tool?.tasks || []} />
         </>
       ) : (

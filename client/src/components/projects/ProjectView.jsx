@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Outlet, useNavigate, useParams } from "react-router";
+import { Outlet, useNavigate, useOutletContext, useParams } from "react-router";
 import useFetch from "../../common/utils/useFetch";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
@@ -17,6 +17,7 @@ import AccessDenied from "../../common/components/AccessDenied";
 import { calculateRemainingCost } from "../../common/utils/calculations";
 
 export default function ProjectView() {
+  const { setHeader } = useOutletContext();
   const { projectId } = useParams();
 
   const { response: projectResponse, loading } = useFetch(
@@ -68,9 +69,14 @@ export default function ProjectView() {
 
   const navigate = useNavigate();
 
+  useEffect(()=>{
+    setHeader('Project View')
+  },[])
+
   useEffect(() => {
     if (projectResponse) {
       setProject(projectResponse);
+      setHeader(projectResponse.name);
     }
   }, [projectResponse]);
 
@@ -151,13 +157,10 @@ export default function ProjectView() {
             sx={{ alignContent: "center", textAlign: "center" }}
           >
             <Grid size={12}>
-              <Typography variant="h3">{project.name}</Typography>
-            </Grid>
-            <Grid size={12}>
               <Typography variant="body1">{project.description}</Typography>
             </Grid>
             <Grid container size={12}>
-              <Grid size={6}>
+              <Grid size={{lg: 6, xs:12}}>
                 <Accordion>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography variant="h4">Parts</Typography>
@@ -176,12 +179,17 @@ export default function ProjectView() {
                           ],
                         })
                       }
-                      totals={[{header:'Parts Cost',value:`$${calculateRemainingCost(parts?.items||[])}`}]}
+                      totals={[
+                        {
+                          header: "Parts Cost",
+                          value: `$${calculateRemainingCost(parts?.items || [])}`,
+                        },
+                      ]}
                     />
                   </AccordionDetails>
                 </Accordion>
               </Grid>
-              <Grid size={6}>
+              <Grid size={{lg: 6, xs:12}}>
                 <Accordion>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography variant="h4">Tools</Typography>
@@ -200,7 +208,12 @@ export default function ProjectView() {
                           ],
                         })
                       }
-                      totals={[{header:'Tools Cost',value:`$${calculateRemainingCost(tools?.items||[])}`}]}
+                      totals={[
+                        {
+                          header: "Tools Cost",
+                          value: `$${calculateRemainingCost(tools?.items || [])}`,
+                        },
+                      ]}
                     />
                   </AccordionDetails>
                 </Accordion>
