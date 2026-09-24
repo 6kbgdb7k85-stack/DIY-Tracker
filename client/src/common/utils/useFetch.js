@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+const API_URL = import.meta.env.VITE_API_URL
 
 /**
  * @param {string} url
@@ -49,7 +50,7 @@ export default function useFetch(url, method = "GET", onLoad = true) {
   }
 
   function compileUrl(urlParams = [], searchParams = []) {
-    let parsedUrl = "/api/" + url;
+    let parsedUrl = `${API_URL||''}/api/${url}`;
     if (urlParams.length) {
       urlParams.forEach((param) => {
         parsedUrl = parsedUrl.replace(param.key, param.value);
@@ -72,7 +73,7 @@ export default function useFetch(url, method = "GET", onLoad = true) {
     const token = localStorage.getItem("token");
     const params = {
       method: compiledMethod,
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: { Authorization: `Bearer ${token}` },
     };
     if (compiledMethod === "GET") {
       return params;

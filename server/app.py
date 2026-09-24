@@ -13,20 +13,11 @@ from config import app, db, api
 from models import *
 
 
-@app.route('/')
-def serve():
-    return send_from_directory(app.static_folder, 'index.html')
-
-@app.route('/<path:path>')
-def static_proxy(path):
-    file_path = os.path.join(app.static_folder, path)
-    if os.path.exists(file_path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
-
 @app.before_request
 def check_logged_in():
+    if request.method == "OPTIONS":
+        return None
+
     open_routes = ["login", "signup"]
 
     if request.endpoint not in open_routes and not verify_jwt_in_request():
@@ -35,6 +26,9 @@ def check_logged_in():
 
 @app.before_request
 def check_resource_ownership():
+    if request.method == "OPTIONS":
+        return None
+
     # endpoints holding user owned resources
     user_owned_endpoints = [
         "project",
@@ -229,7 +223,7 @@ class TaskView(Resource):
     def patch(self, project_id, task_id):
         task = Task.query.filter(Task.id == task_id).first()
         request_body = request.get_json()
-        validated_data = TaskSchema(exclude=("project", "parts","tools")).load(
+        validated_data = TaskSchema(exclude=("project", "parts", "tools")).load(
             request_body, unknown=EXCLUDE, partial=True
         )
         for k, v in validated_data.items():
@@ -379,16 +373,22 @@ class ToolView(Resource):
     def patch(self, tool_id):
         tool = Tool.query.filter(Tool.id == tool_id).first()
         request_body = request.get_json()
-        validatedData = ToolSchema(exclude=("user","tasks")).load(
+        validatedData = ToolSchema(exclude=("user", "tasks")).load(
             request_body, partial=True, unknown=EXCLUDE
         )
         for k, v in validatedData.items():
             if hasattr(tool, k):
                 setattr(tool, k, v)
         if "add_task" in request_body:
-            tool.tasks.append(Task.query.filter(Task.id==int(request_body["add_task"])).first())
+            tool.tasks.append(
+                Task.query.filter(Task.id == int(request_body["add_task"])).first()
+            )
         if "remove_task" in request_body:
-            tool.tasks = [task for task in tool.tasks if task.id != int(request_body["remove_task"])]
+            tool.tasks = [
+                task
+                for task in tool.tasks
+                if task.id != int(request_body["remove_task"])
+            ]
         try:
             db.session.commit()
             return make_response(ToolSchema().dump(tool), 200)
@@ -410,9 +410,13 @@ api.add_resource(Signup, "/api/signup", endpoint="signup")
 api.add_resource(CheckToken, "/api/me", endpoint="me")
 api.add_resource(ProjectList, "/api/projects", endpoint="projects")
 api.add_resource(ProjectView, "/api/projects/<int:project_id>", endpoint="project")
-api.add_resource(TaskList, "/api/projects/<int:project_id>/tasks", endpoint="project_tasks")
 api.add_resource(
-    TaskView, "/api/projects/<int:project_id>/tasks/<int:task_id>", endpoint="project_task"
+    TaskList, "/api/projects/<int:project_id>/tasks", endpoint="project_tasks"
+)
+api.add_resource(
+    TaskView,
+    "/api/projects/<int:project_id>/tasks/<int:task_id>",
+    endpoint="project_task",
 )
 api.add_resource(
     PartList,
