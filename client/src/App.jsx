@@ -22,6 +22,8 @@ function App() {
     response: session,
     loading: sessionLoading,
     runFetch: checkMe,
+    error: sessionError,
+    setError: setSessionError,
   } = useFetch("me");
 
   const navigate = useNavigate();
@@ -33,6 +35,15 @@ function App() {
       setUser(session.username);
     }
   }, [session]);
+
+  useEffect(() => {
+    if (sessionError) {
+      setUser(null);
+      localStorage.removeItem("token");
+      navigate("/");
+      setSessionError(null)
+    }
+  },[sessionError]);
 
   function returnToParentButton() {
     let button;
@@ -80,15 +91,18 @@ function App() {
     return <Grid size={button ? "auto" : "grow"}>{button || <></>}</Grid>;
   }
 
-  function closeMenu(){
-    setMenuAnchor(null)
+  function closeMenu() {
+    setMenuAnchor(null);
   }
 
   return (
     <ThemeProvider theme={theme}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)} color={"inherit"}>
+          <IconButton
+            onClick={(e) => setMenuAnchor(e.currentTarget)}
+            color={"inherit"}
+          >
             <MenuIcon />
           </IconButton>
           <Menu
