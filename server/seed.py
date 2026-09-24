@@ -9,9 +9,7 @@ from faker import Faker
 fake = Faker()
 
 with app.app_context():
-
-    db.create_all()
-
+    
     User.query.delete()
     Project.query.delete()
     Task.query.delete()
