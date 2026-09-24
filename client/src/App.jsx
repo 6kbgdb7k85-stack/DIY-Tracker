@@ -8,7 +8,7 @@ import Button from "@mui/material/Button";
 
 function App() {
   const [user, setUser] = useState(null);
-  const { response: session, loading: sessionLoading, runFetch: checkMe } = useFetch("me","GET",false);
+  const { response: session, loading: sessionLoading, runFetch: checkMe } = useFetch("me");
 
   const navigate = useNavigate();
   const {projectId,taskId,toolId} = useParams()
