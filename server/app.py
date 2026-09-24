@@ -404,40 +404,40 @@ class ToolView(Resource):
             return make_response({"error": "500 Server Error"})
 
 
-api.add_resource(Login, "/login", endpoint="login")
-api.add_resource(Signup, "/signup", endpoint="signup")
-api.add_resource(CheckToken, "/me", endpoint="me")
-api.add_resource(ProjectList, "/projects", endpoint="projects")
-api.add_resource(ProjectView, "/projects/<int:project_id>", endpoint="project")
-api.add_resource(TaskList, "/projects/<int:project_id>/tasks", endpoint="project_tasks")
+api.add_resource(Login, "/api/login", endpoint="login")
+api.add_resource(Signup, "/api/signup", endpoint="signup")
+api.add_resource(CheckToken, "/api/me", endpoint="me")
+api.add_resource(ProjectList, "/api/projects", endpoint="projects")
+api.add_resource(ProjectView, "/api/projects/<int:project_id>", endpoint="project")
+api.add_resource(TaskList, "/api/projects/<int:project_id>/tasks", endpoint="project_tasks")
 api.add_resource(
-    TaskView, "/projects/<int:project_id>/tasks/<int:task_id>", endpoint="project_task"
+    TaskView, "/api/projects/<int:project_id>/tasks/<int:task_id>", endpoint="project_task"
 )
 api.add_resource(
     PartList,
-    "/projects/<int:project_id>/tasks/<int:task_id>/parts",
-    "/projects/<int:project_id>/parts",
+    "/api/projects/<int:project_id>/tasks/<int:task_id>/parts",
+    "/api/projects/<int:project_id>/parts",
     endpoint="project_parts",
 )
 api.add_resource(
     PartView,
-    "/parts/<int:part_id>",
+    "/api/parts/<int:part_id>",
     endpoint="part",
 )
 api.add_resource(
     ToolList,
-    "/tools",
+    "/api/tools",
     endpoint="tools",
 )
 api.add_resource(
     ToolList,
-    "/projects/<int:project_id>/tasks/<int:task_id>/tools",
-    "/projects/<int:project_id>/tools",
+    "/api/projects/<int:project_id>/tasks/<int:task_id>/tools",
+    "/api/projects/<int:project_id>/tools",
     endpoint="project_tools",
 )
 api.add_resource(
     ToolView,
-    "/tools/<int:tool_id>",
+    "/api/tools/<int:tool_id>",
     endpoint="tool",
 )
 
