@@ -22,7 +22,7 @@ else:
     # Fallback to local SQLite for development
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///local_development.db"
 if jwt_key:
-    app.config['JWT_SECRET_KEY']=jewt_key
+    app.config['JWT_SECRET_KEY']=jwt_key
 else:
     app.config["JWT_SECRET_KEY"] = "dev-key"
     
