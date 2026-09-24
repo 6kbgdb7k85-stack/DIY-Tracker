@@ -10,20 +10,14 @@ fake = Faker()
 
 with app.app_context():
 
-    existing_tables = set(inspect(db.engine).get_table_names())
+    db.create_all()
 
-    if "user" in existing_tables:
-        User.query.delete()
-    if "project" in existing_tables:
-        Project.query.delete()
-    if "task" in existing_tables:
-        Task.query.delete()
-    if "part" in existing_tables:
-        Part.query.delete()
-    if "tool" in existing_tables:
-        Tool.query.delete()
-    if "task_tools" in existing_tables:
-        TaskTools.query.delete()
+    User.query.delete()
+    Project.query.delete()
+    Task.query.delete()
+    Part.query.delete()
+    Tool.query.delete()
+    TaskTools.query.delete()
 
     demo_user = User(username="demo")
     demo_user.password_hash = demo_user.username + "pass"
