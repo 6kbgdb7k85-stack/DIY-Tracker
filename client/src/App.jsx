@@ -88,7 +88,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <AppBar position="static">
         <Toolbar>
-          <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
+          <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)} color={"inherit"}>
             <MenuIcon />
           </IconButton>
           <Menu
