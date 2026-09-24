@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-const API_URL = import.meta.env.VITE_API_URL
+import { useLocation, useNavigate } from "react-router";
+const API_URL = import.meta.env.VITE_API_URL;
 
 /**
  * @param {string} url
@@ -16,7 +16,10 @@ export default function useFetch(url, method = "GET", onLoad = true) {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
 
-  const navigate=useNavigate()
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  const PUBLIC_ROUTES = ["login", "signup"];
 
   useEffect(() => {
     if (onLoad && localStorage.getItem("token")) {
@@ -25,6 +28,17 @@ export default function useFetch(url, method = "GET", onLoad = true) {
       setLoading(false);
     }
   }, []);
+
+  function isPublicRoute(path) {
+    let publicRoute = false;
+    PUBLIC_ROUTES.forEach((route) => {
+      if (path.includes(route)) {
+        publicRoute = true;
+        return;
+      }
+    });
+    return publicRoute;
+  }
 
   function runFetch(body = {}) {
     const { urlParams = [], searchParams = [], ...payload } = body ?? {};
@@ -37,10 +51,10 @@ export default function useFetch(url, method = "GET", onLoad = true) {
         }
         const data = await r.json();
         if (!r.ok) {
-          if(r.status===401){
-            navigate('/')
+          if (r.status === 401 && !isPublicRoute(pathname)) {
+            navigate("/");
           }
-          throw new Error(data.msg||data.error);
+          throw new Error(data.msg || data.error);
         }
 
         return data;
@@ -50,24 +64,24 @@ export default function useFetch(url, method = "GET", onLoad = true) {
         setLoading(false);
       })
       .catch((error) => {
-        setError(error)
+        setError(error);
         setLoading(false);
       });
   }
 
   function compileUrl(urlParams = [], searchParams = []) {
-    let parsedUrl = `${API_URL||''}/api/${url}`;
+    let parsedUrl = `${API_URL || ""}/api/${url}`;
     if (urlParams.length) {
       urlParams.forEach((param) => {
         parsedUrl = parsedUrl.replace(param.key, param.value);
       });
     }
-    
-    if(searchParams.length){
-      parsedUrl+="?"
-      searchParams.forEach(param=>{
-        parsedUrl+=`&${param.key}=${param.value}`
-      })
+
+    if (searchParams.length) {
+      parsedUrl += "?";
+      searchParams.forEach((param) => {
+        parsedUrl += `&${param.key}=${param.value}`;
+      });
     }
     return parsedUrl;
   }
@@ -98,5 +112,5 @@ export default function useFetch(url, method = "GET", onLoad = true) {
     }
   }
 
-  return { response,error, loading, runFetch, setResponse, setError }; // returning setResponse for greater control when using response in useEffect blocks
+  return { response, error, loading, runFetch, setResponse, setError }; // returning setResponse for greater control when using response in useEffect blocks
 }
