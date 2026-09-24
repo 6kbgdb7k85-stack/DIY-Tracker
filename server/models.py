@@ -118,9 +118,9 @@ class Part(db.Model):
 class PartSchema(Schema):
     id = fields.Int()
     name = fields.String(required=True)
-    cost = fields.Float()
-    amount_required = fields.Int()
-    amount_owned = fields.Int()
+    cost = fields.Float(validate=validate.Range(min=0))
+    amount_required = fields.Int(validate=validate.Range(min=0))
+    amount_owned = fields.Int(validate=validate.Range(min=0))
     source = fields.String()
 
     task = fields.Nested(lambda: TaskSchema(exclude=("parts", "tools")), required=True)
@@ -153,7 +153,7 @@ class ToolSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.String(required=True, validate=validate.Length(min=1,error="Name is required"))
     owned = fields.Bool()
-    cost = fields.Float(allow_none=True)
+    cost = fields.Float(allow_none=True,validate=validate.Range(min=0))
 
     user = fields.Nested(
         lambda: UserSchema(exclude=("tools", "projects", "parts")), dump_only=True
