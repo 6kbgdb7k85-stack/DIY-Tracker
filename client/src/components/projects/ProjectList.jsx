@@ -54,7 +54,7 @@ function ProjectList() {
     response: toolsResponse,
     loading: toolsLoading,
     runFetch: getTools,
-  } = useFetch("/tools");
+  } = useFetch("tools");
   // secondary alias for clarity when creating tool
   const createTool = getTools;
 
@@ -63,7 +63,7 @@ function ProjectList() {
     loading: deleteToolLoading,
     runFetch: deleteTool,
     setResponse: setDeleteToolResponse,
-  } = useFetch("/tools/:toolId", "DELETE", false);
+  } = useFetch("tools/:toolId", "DELETE", false);
   // secondary alias for clarity when updating
   const updateTool = deleteTool;
 
