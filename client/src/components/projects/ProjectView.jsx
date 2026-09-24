@@ -69,9 +69,9 @@ export default function ProjectView() {
 
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    setHeader('Project View')
-  },[])
+  useEffect(() => {
+    setHeader("Project View");
+  }, []);
 
   useEffect(() => {
     if (projectResponse) {
@@ -160,9 +160,16 @@ export default function ProjectView() {
               <Typography variant="body1">{project.description}</Typography>
             </Grid>
             <Grid container size={12}>
-              <Grid size={{lg: 6, xs:12}}>
+              <Grid size={{ lg: 6, xs: 12 }}>
                 <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <AccordionSummary
+                    sx={{
+                      "& .MuiAccordionSummary-content": {
+                        justifyContent: "center",
+                      },
+                    }}
+                    expandIcon={<ExpandMoreIcon />}
+                  >
                     <Typography variant="h4">Parts</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -189,9 +196,16 @@ export default function ProjectView() {
                   </AccordionDetails>
                 </Accordion>
               </Grid>
-              <Grid size={{lg: 6, xs:12}}>
+              <Grid size={{ lg: 6, xs: 12 }}>
                 <Accordion>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <AccordionSummary
+                    sx={{
+                      "& .MuiAccordionSummary-content": {
+                        justifyContent: "center",
+                      },
+                    }}
+                    expandIcon={<ExpandMoreIcon />}
+                  >
                     <Typography variant="h4">Tools</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -220,8 +234,15 @@ export default function ProjectView() {
               </Grid>
             </Grid>
             <Grid size={12}>
-              <Accordion defaultExpanded>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Accordion defaultExpanded sx={{ textAlign: "center" }}>
+                <AccordionSummary
+                  sx={{
+                    "& .MuiAccordionSummary-content": {
+                      justifyContent: "center",
+                    },
+                  }}
+                  expandIcon={<ExpandMoreIcon />}
+                >
                   <Typography variant="h4">Tasks</Typography>
                 </AccordionSummary>
                 <AccordionDetails>

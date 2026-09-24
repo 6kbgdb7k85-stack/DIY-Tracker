@@ -216,7 +216,7 @@ function ProjectList() {
     <section>
       <Grid container spacing={2}>
         <Grid size={{xs:12,lg:6}}>
-          <Typography variant="h3">Projects</Typography>
+          <Typography sx={{textAlign:'center'}} variant="h3">Projects</Typography>
           <TableWrapper
             cols={PROJECT_TABLE_COLUMNS}
             data={projects}
@@ -244,7 +244,7 @@ function ProjectList() {
           />
         </Grid>
         <Grid size={{xs:12,lg:6}}>
-          <Typography variant="h3">Tools</Typography>
+          <Typography sx={{textAlign:'center'}} variant="h3">Tools</Typography>
           <TableWrapper
             cols={TOOL_TABLE_COLS}
             data={tools}
