@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 const API_URL = import.meta.env.VITE_API_URL
 
 /**
@@ -14,6 +15,8 @@ export default function useFetch(url, method = "GET", onLoad = true) {
   const [loading, setLoading] = useState(onLoad);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState(null);
+
+  const navigate=useNavigate()
 
   useEffect(() => {
     if (onLoad && localStorage.getItem("token")) {
@@ -34,7 +37,10 @@ export default function useFetch(url, method = "GET", onLoad = true) {
         }
         const data = await r.json();
         if (!r.ok) {
-          throw new Error(data.error);
+          if(r.status===401){
+            navigate('/')
+          }
+          throw new Error(data.msg||data.error);
         }
 
         return data;
@@ -44,7 +50,6 @@ export default function useFetch(url, method = "GET", onLoad = true) {
         setLoading(false);
       })
       .catch((error) => {
-        console.log(error);
         setError(error)
         setLoading(false);
       });
