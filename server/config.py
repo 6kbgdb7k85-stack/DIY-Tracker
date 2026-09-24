@@ -10,9 +10,11 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
+
+
 database_url = os.environ.get("DATABASE_URL")
-jwt_key = os.environ.get('JWT_SECRET_KEY')
-CORS(app,origins=["https://onrender.com"])
+jwt_key = os.environ.get("JWT_SECRET_KEY")
+# app.config["JWT_OPTIONS_ALLOWED_METHODS"] = ["OPTIONS"]
 
 if database_url:
     # Render's PostgreSQL URLs often start with 'postgres://'
@@ -24,10 +26,10 @@ else:
     # Fallback to local SQLite for development
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///local_development.db"
 if jwt_key:
-    app.config['JWT_SECRET_KEY']=jwt_key
+    app.config["JWT_SECRET_KEY"] = jwt_key
 else:
     app.config["JWT_SECRET_KEY"] = "dev-key"
-    
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.json.compact = False
 
@@ -43,5 +45,7 @@ db.init_app(app)
 
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
+
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173","https://diy-tracker-server.onrender.com"]}})
 
 api = Api(app)
