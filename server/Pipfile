@@ -16,6 +16,8 @@ pytest = "*"
 flask-bcrypt = "*"
 flask-jwt-extended = "*"
 werkzeug = "*"
+gunicorn = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
