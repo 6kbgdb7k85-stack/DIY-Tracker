@@ -46,6 +46,8 @@ db.init_app(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173","https://diy-tracker-server.onrender.com"]}})
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
+CORS(app, resources={r"/api/*": {"origins": [FRONTEND_URL]}})
 
 api = Api(app)
