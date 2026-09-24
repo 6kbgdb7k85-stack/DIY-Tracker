@@ -1,5 +1,5 @@
 from app import app
-from models import db, User, Project, Task, Part, Tool
+from models import db, User, Project, Task, Part, Tool, TaskTools
 
 import random as r
 
@@ -14,16 +14,23 @@ with app.app_context():
     Task.query.delete()
     Part.query.delete()
     Tool.query.delete()
+    TaskTools.query.delete()
 
     demo_user = User(username="demo")
     demo_user.password_hash = demo_user.username + "password"
 
     demo_project = Project(
-        name="1339 restoration", description="fixes for DeLorean 1339", user=demo_user
+        name="1339 restoration",
+        description="fixes for DeLorean 1339",
+        user=demo_user,
+        completed=False,
     )
 
     demo_task = Task(
-        name="Replace Seals", description="Replace weather strips", project=demo_project
+        name="Replace Seals",
+        description="Replace weather strips",
+        project=demo_project,
+        completed=False,
     )
     demo_project.tasks.append(demo_task)
 
@@ -39,9 +46,9 @@ with app.app_context():
     demo_task.parts.append(demo_part)
 
     demo_tools = [
-        Tool(name="Wrench 10mm", owned=True, user=demo_user),
-        Tool(name="Wrench 13mm", owned=True, user=demo_user),
-        Tool(name="Rivet Gun", owned=False, cost=70, user=demo_user),
+        Tool(name="Wrench 10mm", owned=True, user=demo_user, cost=0),
+        Tool(name="Wrench 13mm", owned=True, user=demo_user, cost=0),
+        Tool(name="Rivet Gun", owned=False, user=demo_user, cost=70),
     ]
 
     fake_users = []
@@ -50,11 +57,11 @@ with app.app_context():
     fake_parts = []
     fake_tools = []
 
-    fake_names=[fake.unique.first_name() for _ in range(9)]
+    fake_names = [fake.unique.first_name() for _ in range(9)]
 
     for i in range(9):
         user = User(username=fake_names[i])
-        user.password_hash = user.username + "password"
+        user.password_hash = user.username + "pass"
         fake_users.append(user)
 
     for i in range(19):
@@ -75,9 +82,9 @@ with app.app_context():
         part = Part(
             name=fake.word(),
             source=fake.company(),
-            amount_required=fake.pyint(),
-            amount_owned=fake.pyint(),
-            cost=fake.pyfloat(),
+            amount_required=fake.pyint(min_value=0),
+            amount_owned=fake.pyint(min_value=0),
+            cost=fake.pyfloat(min_value=0.0),
         )
         assigned_task = r.choice(fake_tasks)
         part.task = assigned_task
@@ -85,12 +92,12 @@ with app.app_context():
         fake_parts.append(part)
 
     for i in range(19):
-        tool = Tool(name=fake.word(), owned=fake.pybool(), cost=fake.pyfloat())
+        tool = Tool(name=fake.word(), owned=fake.pybool(), cost=fake.pyfloat(min_value=0.0))
         tool.user = r.choice(fake_users)
         user_tasks = []
         for project in tool.user.projects:
             user_tasks.extend(project.tasks)
-        if len(user_tasks)>0:
+        if len(user_tasks) > 0:
             for n in range(r.randint(1, 5)):
                 tool_task = r.choice(user_tasks)
                 if tool_task not in tool.tasks:
