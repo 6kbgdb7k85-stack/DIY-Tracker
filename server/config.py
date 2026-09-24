@@ -8,8 +8,9 @@ from sqlalchemy import MetaData
 from flask_jwt_extended import JWTManager
 
 app = Flask(__name__, static_folder="../client/dist", static_url_path="/")
-app.config["JWT_SECRET_KEY"] = "dev-key"
+
 database_url = os.environ.get("DATABASE_URL")
+jwt_key = os.environ.get('JWT_SECRET_KEY')
 
 if database_url:
     # Render's PostgreSQL URLs often start with 'postgres://'
@@ -20,6 +21,11 @@ if database_url:
 else:
     # Fallback to local SQLite for development
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///local_development.db"
+if jwt_key:
+    app.config['JWT_SECRET_KEY']=jewt_key
+else:
+    app.config["JWT_SECRET_KEY"] = "dev-key"
+    
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.json.compact = False
 
