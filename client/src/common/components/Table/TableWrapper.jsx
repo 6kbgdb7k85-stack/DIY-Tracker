@@ -69,6 +69,11 @@ export default function TableWrapper({
     }
   }
 
+  function isForeignKey(cols, colId) {
+    const column = cols.find((col) => col.id === colId);
+    return column.foreignKey;
+  }
+
   function handleChange(e) {
     if (e.type === FieldTypes.EDIT_CHECKBOX) {
       onChange({ ...e, rowId: rows[e.rowId].id });
@@ -80,6 +85,7 @@ export default function TableWrapper({
           }
           switch (e.type) {
             case FieldTypes.AUTOCOMPLETE:
+              console.log(e);
               if (e.value?.id) {
                 const newRow = { ...row, id: e.value.id };
                 cols.forEach((col) => {
@@ -87,6 +93,9 @@ export default function TableWrapper({
                 });
                 return newRow;
               } else {
+                if (isForeignKey(cols, e.id)) {
+                  return { [e.id]: e.value?.inputValue };
+                }
                 return { ...row, [e.id]: e.value?.inputValue };
               }
             case FieldTypes.NUMBER:
@@ -120,8 +129,8 @@ export default function TableWrapper({
           newRow[col.id] = "";
           break;
       }
-      if(expandedTable?.dataCol===col.id){
-        newRow[col.id]=[]
+      if (expandedTable?.dataCol === col.id) {
+        newRow[col.id] = [];
       }
     });
     setRows((prevState) => [...prevState, newRow]);
@@ -141,6 +150,18 @@ export default function TableWrapper({
   function handleCancel(rowIndex) {
     setEditRows((prevState) => prevState.filter((index) => index !== rowIndex));
     setRows(data);
+  }
+
+  function isReadOnly(column, row) {
+    if (column.readOnly) {
+      return true;
+    }
+    if (column.editRestriction) {
+      if (column.editRestriction === "EDIT_IF_NEW" && row.id) {
+        return true;
+      }
+    }
+    return false;
   }
 
   return (
@@ -236,7 +257,10 @@ export default function TableWrapper({
                               rowId={idx}
                               value={val}
                               onChange={handleChange}
-                              isEdit={editRows?.includes(idx)}
+                              isEdit={
+                                editRows?.includes(idx) &&
+                                !isReadOnly(col, rowData)
+                              }
                               lookups={lookups}
                             />
                           );
@@ -353,26 +377,37 @@ export default function TableWrapper({
                     </React.Fragment>
                   );
                 })}
-                {totals ? (<>
-                    {totals.map((total,index)=>{
-                      if (index===0){
+                {totals ? (
+                  <>
+                    {totals.map((total, index) => {
+                      if (index === 0) {
                         return (
                           <TableRow>
-                            <TableCell rowSpan={totals.length} colSpan={cols.length-2}/>
-                            <TableCell component="th" scope="row">{total.header}</TableCell>
+                            <TableCell
+                              rowSpan={totals.length}
+                              colSpan={cols.length - 2}
+                            />
+                            <TableCell component="th" scope="row">
+                              {total.header}
+                            </TableCell>
                             <TableCell align="right">{total.value}</TableCell>
                           </TableRow>
-                        )
-                      }else{
+                        );
+                      } else {
                         return (
                           <TableRow>
-                            <TableCell component="th" scope="row">{total.header}</TableCell>
+                            <TableCell component="th" scope="row">
+                              {total.header}
+                            </TableCell>
                             <TableCell align="right">{total.value}</TableCell>
                           </TableRow>
-                        )
+                        );
                       }
                     })}
-                </>) : <></>}
+                  </>
+                ) : (
+                  <></>
+                )}
               </TableBody>
             </Table>
           </TableContainer>
