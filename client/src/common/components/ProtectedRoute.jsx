@@ -1,8 +1,13 @@
+import { useEffect } from "react";
 import { Navigate, Outlet, useLocation, useOutletContext } from "react-router";
 
 export default function ProtectedRoute() {
   const appContext = useOutletContext();
   const location = useLocation();
+
+  useEffect(()=>{
+    appContext.checkMe()
+  },[])
 
   if (appContext.sessionLoading) {
     return <>...Loading</>;

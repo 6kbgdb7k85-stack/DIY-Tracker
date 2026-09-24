@@ -8,7 +8,7 @@ import Button from "@mui/material/Button";
 
 function App() {
   const [user, setUser] = useState(null);
-  const { response: session, loading: sessionLoading } = useFetch("me");
+  const { response: session, loading: sessionLoading, runFetch: checkMe } = useFetch("me","GET",false);
 
   const navigate = useNavigate();
   const {projectId,taskId,toolId} = useParams()
@@ -44,7 +44,7 @@ function App() {
           </Button>
         </Toolbar>
       </AppBar>
-      <Outlet context={{ setUser, user, sessionLoading, session }} />
+      <Outlet context={{ setUser, user, sessionLoading, session, checkMe }} />
     </>
   );
 }
