@@ -18,6 +18,7 @@ flask-jwt-extended = "*"
 werkzeug = "*"
 gunicorn = "*"
 psycopg2-binary = "*"
+flask-cors = "*"
 
 [dev-packages]
 

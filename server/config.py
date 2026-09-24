@@ -6,11 +6,13 @@ from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
 
-app = Flask(__name__, static_folder="../client/dist", static_url_path="/")
+app = Flask(__name__)
 
 database_url = os.environ.get("DATABASE_URL")
 jwt_key = os.environ.get('JWT_SECRET_KEY')
+CORS(app,origins=["https://onrender.com"])
 
 if database_url:
     # Render's PostgreSQL URLs often start with 'postgres://'
