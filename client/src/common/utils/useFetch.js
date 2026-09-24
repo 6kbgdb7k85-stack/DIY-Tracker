@@ -15,8 +15,10 @@ export default function useFetch(url, method = "GET", onLoad = true) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (onLoad) {
+    if (onLoad && localStorage.getItem("token")) {
       runFetch();
+    } else if (onLoad) {
+      setLoading(false);
     }
   }, []);
 
@@ -67,11 +69,10 @@ export default function useFetch(url, method = "GET", onLoad = true) {
   function compileFetchOptions(body) {
     const { method: bodyMethod, ...requestBody } = body ?? {};
     const compiledMethod = bodyMethod || method; // allows for using the same useFetch for multiple methods like get and patch depending on circumstance
+    const token = localStorage.getItem("token");
     const params = {
       method: compiledMethod,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     };
     if (compiledMethod === "GET") {
       return params;
