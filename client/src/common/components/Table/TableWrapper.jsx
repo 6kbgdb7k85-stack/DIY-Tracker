@@ -28,7 +28,15 @@ import { FieldTypes } from "../../constants/FieldTypes";
  * @param {Object:{title,cols,dataCol}} expandedTable
  * @param {Object:{page,perPage,total,totalPages}} pagination
  * @param {Boolean} loading
- * @param {Boolean} expandedLoading
+ * @param {Function} onRowClick
+ * @param {Function} onPage
+ * @param {Function} onChange
+ * @param {Function} onDelete
+ * @param {Boolean} canAdd
+ * @param {Boolean} canEdit
+ * @param {Function} onSave
+ * @param {Object} lookups
+ * @param {Object} totals
  * @returns {<Table>}
  */
 
@@ -42,7 +50,6 @@ export default function TableWrapper({
   onPage = () => {},
   onChange = () => {},
   onDelete,
-  onAdd,
   canAdd,
   canEdit,
   onSave,
@@ -298,7 +305,7 @@ export default function TableWrapper({
                           <></>
                         )}
                         {onDelete && !editRows.includes(idx) ? (
-                          <TableCell>
+                          <TableCell align="center">
                             <IconButton
                               aria-label="delete"
                               onClick={() => onDelete(rowData.id)}
@@ -309,7 +316,6 @@ export default function TableWrapper({
                         ) : (
                           <></>
                         )}
-                        {onAdd ? <TableCell /> : <></>}
                       </TableRow>
                       {expandedTable ? (
                         <TableRow

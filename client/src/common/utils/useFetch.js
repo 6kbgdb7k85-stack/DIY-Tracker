@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL
  * @param {string} url
  * @param {"GET"||"POST"||"PATCH"||"DELETE"} method
  * @param {boolean} onLoad
- * @returns {Object,boolean,function,function}
+ * @returns {Object,Object,boolean,function,function,function}
  */
 
 // simplify fetch into a streamlined setup for repeated use
@@ -45,6 +45,7 @@ export default function useFetch(url, method = "GET", onLoad = true) {
       })
       .catch((error) => {
         console.log(error);
+        setError(error)
         setLoading(false);
       });
   }
@@ -92,5 +93,5 @@ export default function useFetch(url, method = "GET", onLoad = true) {
     }
   }
 
-  return { response, loading, runFetch, setResponse }; // returning setResponse for greater control when using response in useEffect blocks
+  return { response,error, loading, runFetch, setResponse, setError }; // returning setResponse for greater control when using response in useEffect blocks
 }
