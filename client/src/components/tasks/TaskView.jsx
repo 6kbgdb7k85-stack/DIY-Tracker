@@ -11,6 +11,7 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import TableWrapper from "../../common/components/Table/TableWrapper";
 import { PART_TABLE_COLS, TASK_TOOLS_COLS } from "./taskConstants";
+import ConfirmationDialog from "../../common/components/ConfirmationDialog";
 
 export default function TaskView() {
   const { setHeader } = useOutletContext();
@@ -18,7 +19,8 @@ export default function TaskView() {
 
   const [task, setTask] = useState(null);
   const [tools, setTools] = useState([]);
-  const [deleteId, setDeleteId] = useState(null);
+  const [deleteRow, setDeleteRow] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -60,6 +62,7 @@ export default function TaskView() {
     response: updateToolResponse,
     loading: updateToolLoading,
     runFetch: updateTool,
+    setResponse: setUpdateToolResponse,
   } = useFetch(`tools/:toolId`, "PATCH", false);
 
   useEffect(() => {
@@ -68,10 +71,11 @@ export default function TaskView() {
 
   useEffect(() => {
     if (updateToolResponse) {
-      if (deleteId) {
+      if (deleteRow) {
         setTools((prevState) =>
-          prevState.filter((tool) => tool.id !== deleteId.tools),
+          prevState.filter((tool) => tool.id !== deleteRow.tools.id),
         );
+        setUpdateToolResponse(null);
       }
     }
   }, [updateToolResponse]);
@@ -83,18 +87,10 @@ export default function TaskView() {
   }, [createToolResponse]);
 
   useEffect(() => {
-    if (deleteId?.parts) {
-      deletePart({
-        urlParams: [{ key: ":partId", value: deleteId.parts }],
-        method: "DELETE",
-      });
-    } else if (deleteId?.tools) {
-      updateTool({
-        urlParams: [{ key: ":toolId", value: deleteId.tools }],
-        remove_task: taskId,
-      });
+    if (deleteRow) {
+      setDialogOpen(true);
     }
-  }, [deleteId]);
+  }, [deleteRow]);
 
   useEffect(() => {
     if (taskResponse) {
@@ -115,12 +111,14 @@ export default function TaskView() {
 
   useEffect(() => {
     if (updatePartResponse) {
-      if (deleteId) {
+      if (deleteRow) {
         setTask((prevState) => ({
           ...prevState,
-          parts: prevState.parts.filter((part) => part.id !== deleteId.parts),
+          parts: prevState.parts.filter(
+            (part) => part.id !== deleteRow.parts.id,
+          ),
         }));
-        setDeleteId(null);
+        setDeleteRow(null);
         setUpdatePartResponse(null);
       } else {
         setTask((prevState) => ({
@@ -163,12 +161,38 @@ export default function TaskView() {
     }
   }
 
+  function handleDelete(id) {
+    if (deleteRow?.parts) {
+      deletePart({
+        urlParams: [{ key: ":partId", value: id }],
+        method: "DELETE",
+      });
+    } else if (deleteRow?.tools) {
+      updateTool({
+        urlParams: [{ key: ":toolId", value: id }],
+        remove_task: taskId,
+      });
+    }
+    setDialogOpen(false);
+  }
+
   if (taskLoading) {
     return <>Loading...</>;
   }
 
   return (
     <>
+      <ConfirmationDialog
+        open={dialogOpen}
+        setOpen={setDialogOpen}
+        resource={deleteRow?.parts || deleteRow?.tools||{}}
+        confirmCallback={handleDelete}
+        customMessage={
+          deleteRow?.tools
+            ? `Are you sure you want to remove Tool "${deleteRow?.tools?.name}" from this task? This does not delete the tool from your profile and it will remain accessible.`
+            : null
+        }
+      />
       {task ? (
         <>
           <Typography variant="body1" sx={{ textAlign: "center" }}>
@@ -188,7 +212,9 @@ export default function TaskView() {
                 canAdd
                 canEdit
                 onSave={(row) => handleRowSave(row, "parts")}
-                onDelete={(rowId) => setDeleteId({ parts: rowId })}
+                onDelete={(row) =>
+                  setDeleteRow({ parts: { ...row, resourceType: "Part" } })
+                }
               />
             </Grid>
             <Grid size={{ lg: 6, xs: 12 }}>
@@ -206,7 +232,9 @@ export default function TaskView() {
                 }}
                 canAdd
                 onSave={(row) => handleRowSave(row, "tools")}
-                onDelete={(rowId) => setDeleteId({ tools: rowId })}
+                onDelete={(row) =>
+                  setDeleteRow({ tools: { ...row, resourceType: "Tool" } })
+                }
                 onRowClick={(rowId) => handleRowClick(rowId, "tools")}
               />
             </Grid>

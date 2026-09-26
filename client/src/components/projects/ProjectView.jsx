@@ -15,6 +15,7 @@ import {
 } from "./projectConstants";
 import AccessDenied from "../../common/components/AccessDenied";
 import { calculateRemainingCost } from "../../common/utils/calculations";
+import ConfirmationDialog from "../../common/components/ConfirmationDialog";
 
 export default function ProjectView() {
   const { setHeader } = useOutletContext();
@@ -35,8 +36,9 @@ export default function ProjectView() {
     runFetch: getTools,
   } = useFetch(`projects/${projectId}/tools`);
 
-  const [deleteId, setDeleteId] = useState(null);
+  const [deleteRow, setDeleteRow] = useState(null);
   const [project, setProject] = useState(null);
+  const [dialogOpen,setDialogOpen]=useState(false)
   const [pagination, setPagination] = useState({
     parts: {
       page: 1,
@@ -97,11 +99,11 @@ export default function ProjectView() {
   useEffect(() => {
     if (deleteTaskResponse) {
       const newProject = { ...project };
-      if (deleteId) {
+      if (deleteRow) {
         newProject.tasks = newProject.tasks.filter(
-          (task) => task.id !== deleteId,
+          (task) => task.id !== deleteRow.id,
         );
-        setDeleteId(null);
+        setDeleteRow(null);
       } else {
         newProject.tasks = newProject.tasks.map((task) => {
           if (task.id === deleteTaskResponse.id) {
@@ -124,10 +126,10 @@ export default function ProjectView() {
     }
   }, [createTaskResponse]);
 
-  function handleDelete(table, id) {
+  function handleDelete(table, row) {
     if (table === "tasks") {
-      setDeleteId(id);
-      deleteTask({ urlParams: [{ key: ":taskId", value: id }] });
+      setDeleteRow({...row,resourceType:"Task"});
+      setDialogOpen(true);
     }
   }
 
@@ -151,6 +153,14 @@ export default function ProjectView() {
     <>
       {project ? (
         <>
+          <ConfirmationDialog
+            resource={deleteRow}
+            confirmCallback={(id) =>
+              deleteTask({ urlParams: [{ key: ":taskId", value: id }] })
+            }
+            open={dialogOpen}
+            setOpen={setDialogOpen}
+          />
           <Grid
             container
             spacing={2}
@@ -255,7 +265,7 @@ export default function ProjectView() {
                     onRowClick={(id) =>
                       navigate(`/projects/${projectId}/tasks/${id}`)
                     }
-                    onDelete={(id) => handleDelete("tasks", id)}
+                    onDelete={(row) => handleDelete("tasks", row)}
                     onSave={handleSave}
                   />
                 </AccordionDetails>

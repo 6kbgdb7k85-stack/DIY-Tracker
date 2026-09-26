@@ -308,7 +308,7 @@ export default function TableWrapper({
                           <TableCell align="center">
                             <IconButton
                               aria-label="delete"
-                              onClick={() => onDelete(rowData.id)}
+                              onClick={() => onDelete(rowData)}
                             >
                               <DeleteIcon />
                             </IconButton>

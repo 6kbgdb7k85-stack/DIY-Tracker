@@ -13,6 +13,7 @@ import {
   handleAddPagination,
   handleDeletePagination,
 } from "../../common/utils/handlePagination";
+import ConfirmationDialog from "../../common/components/ConfirmationDialog";
 
 function ProjectList() {
   const { setHeader } = useOutletContext();
@@ -32,7 +33,8 @@ function ProjectList() {
   });
   const [projects, setProjects] = useState([]);
   const [tools, setTools] = useState([]);
-  const [deleteId, setDeleteId] = useState(null);
+  const [deleteRow, setDeleteRow] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(null);
 
   const { pathname } = useLocation();
 
@@ -97,7 +99,7 @@ function ProjectList() {
 
   useEffect(() => {
     if (updateProjectResponse) {
-      if (deleteId) {
+      if (deleteRow) {
         handleDeletePagination(pagination.projects, getProjects);
       } else {
         getProjects({
@@ -107,7 +109,7 @@ function ProjectList() {
           ],
         });
       }
-      setDeleteId(null);
+      setDeleteRow(null);
       setUpdateProjectResponse(null);
     }
   }, [updateProjectResponse]);
@@ -126,9 +128,9 @@ function ProjectList() {
 
   useEffect(() => {
     if (deleteToolResponse) {
-      if (deleteId) {
+      if (deleteRow) {
         handleDeletePagination(pagination.tools, getTools);
-        setDeleteId(null);
+        setDeleteRow(null);
       } else {
         getTools({
           searchParams: [
@@ -142,15 +144,10 @@ function ProjectList() {
   }, [deleteToolResponse]);
 
   useEffect(() => {
-    if (deleteId?.tools) {
-      deleteTool({ urlParams: [{ key: ":toolId", value: deleteId.tools }] });
-    } else if (deleteId?.projects) {
-      deleteProject({
-        urlParams: [{ key: ":projectId", value: deleteId.projects }],
-        method: "DELETE",
-      });
+    if(deleteRow){
+      setDialogOpen(true);
     }
-  }, [deleteId]);
+  }, [deleteRow]);
 
   useEffect(() => {
     if (toolsResponse) {
@@ -182,8 +179,18 @@ function ProjectList() {
     navigate(`/${table}/${id}`, { state: { prevLocation: pathname } });
   }
 
-  function handleDelete(table, id) {
-    setDeleteId({ [table]: id });
+  function handleDelete(id) {
+    if (deleteRow?.tools) {
+      deleteTool({
+        urlParams: [{ key: ":toolId", value: id }],
+      });
+    } else if (deleteRow?.projects) {
+      deleteProject({
+        urlParams: [{ key: ":projectId", value: id }],
+        method: "DELETE",
+      });
+    }
+    setDialogOpen(false)
   }
 
   function handleSave(row, table) {
@@ -214,9 +221,17 @@ function ProjectList() {
 
   return (
     <section>
+      <ConfirmationDialog
+        open={dialogOpen}
+        setOpen={setDialogOpen}
+        confirmCallback={handleDelete}
+        resource={deleteRow?.projects||deleteRow?.tools||{}}
+      />
       <Grid container spacing={2}>
-        <Grid size={{xs:12,lg:6}}>
-          <Typography sx={{textAlign:'center'}} variant="h3">Projects</Typography>
+        <Grid size={{ xs: 12, lg: 6 }}>
+          <Typography sx={{ textAlign: "center" }} variant="h3">
+            Projects
+          </Typography>
           <TableWrapper
             cols={PROJECT_TABLE_COLUMNS}
             data={projects}
@@ -240,17 +255,19 @@ function ProjectList() {
             onRowClick={(id) => handleRowClick("projects", id)}
             onChange={handleChange}
             onSave={(row) => handleSave(row, "projects")}
-            onDelete={(id) => handleDelete("projects", id)}
+            onDelete={(row) => setDeleteRow({projects:{...row,resourceType:'Project'}})}
           />
         </Grid>
-        <Grid size={{xs:12,lg:6}}>
-          <Typography sx={{textAlign:'center'}} variant="h3">Tools</Typography>
+        <Grid size={{ xs: 12, lg: 6 }}>
+          <Typography sx={{ textAlign: "center" }} variant="h3">
+            Tools
+          </Typography>
           <TableWrapper
             cols={TOOL_TABLE_COLS}
             data={tools}
             loading={toolsLoading}
             onRowClick={(id) => handleRowClick("tools", id)}
-            onDelete={(id) => handleDelete("tools", id)}
+            onDelete={(row) => setDeleteRow({tools:{...row,resourceType:'Tool'}})}
             pagination={pagination.tools}
             onPage={(pageData) =>
               getTools({
