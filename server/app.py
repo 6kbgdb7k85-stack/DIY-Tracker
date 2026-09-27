@@ -84,7 +84,7 @@ class Login(Resource):
                 jsonify(token=auth_token, user=UserSchema().dump(user)), 200
             )
         else:
-            return make_response({"error": "401 Invalid Login"}, 401)
+            return make_response({"error": "401 Invalid Login","alert":{'severity':'error','message':'Invalid Username or Password'}}, 401)
 
 
 class Signup(Resource):
@@ -92,18 +92,22 @@ class Signup(Resource):
         username = request.get_json().get("username")
         password = request.get_json().get("password")
         if not username or not password:
-            return make_response({"error": "400 Bad Request"})
-        user = User(username=username)
-        user.password_hash = password
+            return make_response({"error": "400 Bad Request"}, 400)
         try:
+            UserSchema(only=("username",)).load({"username":username})
+        except ValidationError as e:
+            return make_response({'fieldErrors':e.messages},422)
+        try:
+            user = User(username=username)
+            user.password_hash = password
             db.session.add(user)
             db.session.commit()
             auth_token = create_access_token(identity=str(user.id))
             return make_response(
                 jsonify(token=auth_token, user=UserSchema().dump(user)), 201
             )
-        except IntegrityError:
-            return make_response({"error": "422 Unprocessable Entity"}, 422)
+        except IntegrityError as e:
+            return make_response({"error": "500 Server Error"}, 500)
 
 
 class CheckToken(Resource):

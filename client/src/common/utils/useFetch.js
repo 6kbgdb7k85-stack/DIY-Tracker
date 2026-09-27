@@ -54,7 +54,9 @@ export default function useFetch(url, method = "GET", onLoad = true) {
           if (r.status === 401 && !isPublicRoute(pathname)) {
             navigate("/");
           }
-          throw new Error(data.msg || data.error);
+          const error = new Error('Request Failed');
+          error.data={...data,url}
+          throw error
         }
 
         return data;
@@ -64,7 +66,7 @@ export default function useFetch(url, method = "GET", onLoad = true) {
         setLoading(false);
       })
       .catch((error) => {
-        setError(error);
+        setError(error.data);
         setLoading(false);
       });
   }
