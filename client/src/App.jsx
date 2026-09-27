@@ -12,12 +12,14 @@ import { metalTheme, woodTheme } from "./assets/themes";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import AlertWrapper from "./common/components/AlertWrapper";
 
 function App() {
   const [header, setHeader] = useState("");
   const [theme, setTheme] = useState(woodTheme);
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [user, setUser] = useState(null);
+  const [alerts, setAlerts] = useState([]);
   const {
     response: session,
     loading: sessionLoading,
@@ -37,13 +39,29 @@ function App() {
   }, [session]);
 
   useEffect(() => {
+  if (alerts.length === 0) return;
+  const intervalId = setInterval(() => {
+    setAlerts((prevState) =>
+      prevState
+        .map((alert) => ({
+          ...alert,
+          timeRemaining: alert.timeRemaining - 1,
+        }))
+        .filter((alert) => alert.timeRemaining > 0),
+    );
+  }, 1000);
+
+  return () => clearInterval(intervalId);
+}, [alerts.length]);
+
+  useEffect(() => {
     if (sessionError) {
       setUser(null);
       localStorage.removeItem("token");
       navigate("/");
-      setSessionError(null)
+      setSessionError(null);
     }
-  },[sessionError]);
+  }, [sessionError]);
 
   function returnToParentButton() {
     let button;
@@ -151,8 +169,23 @@ function App() {
         </Grid>
         {returnToParentButton()}
       </Grid>
+      {alerts.map((alert) => (
+        <AlertWrapper
+          key={"alert-" + alert.id}
+          severity={alert.severity}
+          message={alert.message}
+        />
+      ))}
       <Outlet
-        context={{ setUser, user, sessionLoading, session, checkMe, setHeader }}
+        context={{
+          setUser,
+          user,
+          sessionLoading,
+          session,
+          checkMe,
+          setHeader,
+          setAlerts,
+        }}
       />
     </ThemeProvider>
   );

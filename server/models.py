@@ -1,6 +1,6 @@
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.hybrid import hybrid_property
-from marshmallow import Schema, fields, post_load, validate
+from marshmallow import Schema, fields, post_load, validate, ValidationError, validates
 
 from config import db, bcrypt
 
@@ -43,6 +43,10 @@ class UserSchema(Schema):
     parts = fields.List(fields.Nested(lambda: PartSchema(exclude=("user", "task"))))
     tools = fields.List(fields.Nested(lambda: ToolSchema(exclude=("user", "tasks"))))
 
+    @validates("username")
+    def validate_unique_username(self,value,**kwargs):
+        if User.query.filter(User.username==value).first():
+            raise ValidationError(f"Username \"{value}\" is already in use.")
 
 class Project(db.Model):
     __tablename__ = "projects"
