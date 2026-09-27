@@ -39,20 +39,20 @@ function App() {
   }, [session]);
 
   useEffect(() => {
-  if (alerts.length === 0) return;
-  const intervalId = setInterval(() => {
-    setAlerts((prevState) =>
-      prevState
-        .map((alert) => ({
-          ...alert,
-          timeRemaining: alert.timeRemaining - 1,
-        }))
-        .filter((alert) => alert.timeRemaining > 0),
-    );
-  }, 1000);
+    if (alerts.length === 0) return;
+    const intervalId = setInterval(() => {
+      setAlerts((prevState) =>
+        prevState
+          .map((alert) => ({
+            ...alert,
+            timeRemaining: alert.timeRemaining - 1,
+          }))
+          .filter((alert) => alert.timeRemaining > 0),
+      );
+    }, 1000);
 
-  return () => clearInterval(intervalId);
-}, [alerts.length]);
+    return () => clearInterval(intervalId);
+  }, [alerts.length]);
 
   useEffect(() => {
     if (sessionError) {
@@ -148,16 +148,21 @@ function App() {
           <Typography variant="h1" sx={{ flexGrow: 1 }}>
             DIY Tracker
           </Typography>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              localStorage.removeItem("token");
-              navigate("/");
-            }}
-          >
-            Logout
-          </Button>
+          {user ? (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => {
+                localStorage.removeItem("token");
+                setUser(null)
+                navigate("/");
+              }}
+            >
+              Logout
+            </Button>
+          ) : (
+            <></>
+          )}
         </Toolbar>
       </AppBar>
       <Grid container sx={{ alignItems: "center", justifyContent: "center" }}>
