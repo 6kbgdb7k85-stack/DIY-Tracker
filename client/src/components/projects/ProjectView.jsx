@@ -267,6 +267,7 @@ export default function ProjectView() {
                     }
                     onDelete={(row) => handleDelete("tasks", row)}
                     onSave={handleSave}
+                    linkCol="name"
                   />
                 </AccordionDetails>
               </Accordion>

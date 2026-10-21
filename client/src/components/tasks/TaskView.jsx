@@ -236,6 +236,7 @@ export default function TaskView() {
                   setDeleteRow({ tools: { ...row, resourceType: "Tool" } })
                 }
                 onRowClick={(rowId) => handleRowClick(rowId, "tools")}
+                linkCol="name"
               />
             </Grid>
           </Grid>

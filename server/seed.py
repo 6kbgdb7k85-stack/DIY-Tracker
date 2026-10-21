@@ -1,6 +1,5 @@
 from app import app
 from models import db, User, Project, Task, Part, Tool, TaskTools
-from sqlalchemy import inspect
 
 import random as r
 
