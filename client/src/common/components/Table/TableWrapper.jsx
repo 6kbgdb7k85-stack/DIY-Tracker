@@ -37,6 +37,7 @@ import { FieldTypes } from "../../constants/FieldTypes";
  * @param {Function} onSave
  * @param {Object} lookups
  * @param {Object} totals
+ * @@param {String} linkCol
  * @returns {<Table>}
  */
 
@@ -55,6 +56,7 @@ export default function TableWrapper({
   onSave,
   lookups,
   totals,
+  linkCol,
 }) {
   const [open, setOpen] = useState({});
   const [editRows, setEditRows] = useState([]);
@@ -69,7 +71,7 @@ export default function TableWrapper({
   function rowClick(event, row) {
     const rowIndex = rows.findIndex((item) => item.id === row.id);
     if (
-      event.target.localName.toLowerCase() === "td" &&
+      event.target.localName.toLowerCase() === "td" || event.target.localName.toLowerCase() === "a" &&
       !editRows.includes(rowIndex)
     ) {
       onRowClick(row.id);
@@ -269,6 +271,8 @@ export default function TableWrapper({
                                 !isReadOnly(col, rowData)
                               }
                               lookups={lookups}
+                              link={col.id === linkCol}
+                              onClick={(e) => rowClick(e, rowData)}
                             />
                           );
                         })}

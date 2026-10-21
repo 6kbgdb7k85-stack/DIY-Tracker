@@ -6,6 +6,8 @@ import { useState } from "react";
 import TextField from "@mui/material/TextField";
 import { FieldTypes } from "../../constants/FieldTypes";
 import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
+import { useTheme } from "@emotion/react";
+import Link from "@mui/material/Link";
 
 export default function TableCellWrapper({
   col,
@@ -14,9 +16,13 @@ export default function TableCellWrapper({
   onChange,
   isEdit,
   lookups,
+  link,
+  onClick
 }) {
   const filter = createFilterOptions();
   const [inputValue, setInputValue] = useState(value || "");
+
+  const theme = useTheme();
 
   function handleChange(e, eventValue) {
     let newValue;
@@ -48,6 +54,18 @@ export default function TableCellWrapper({
   }
 
   function compileField() {
+    if (link && !isEdit) {
+      return (
+        <Link
+          sx={{
+            ":hover": { cursor: "pointer" },
+          }}
+          aria-label={`To learn more about ${value} click here`}
+        >
+          {value}
+        </Link>
+      );
+    }
     switch (col.type) {
       case FieldTypes.EDIT_CHECKBOX:
         return (
@@ -143,12 +161,14 @@ export default function TableCellWrapper({
             )}
           </>
         );
-        case FieldTypes.CALCULATED:
-          if (typeof col.calculation !== "function"){
-            console.error("Column param 'calculation' must be a function to use type 'CALCULATED'")
-            return <></>
-          }
-          return <>{col.calculation(value)}</>
+      case FieldTypes.CALCULATED:
+        if (typeof col.calculation !== "function") {
+          console.error(
+            "Column param 'calculation' must be a function to use type 'CALCULATED'",
+          );
+          return <></>;
+        }
+        return <>{col.calculation(value)}</>;
       default:
         return (
           <>

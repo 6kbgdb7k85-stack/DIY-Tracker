@@ -256,6 +256,7 @@ function ProjectList() {
             onChange={handleChange}
             onSave={(row) => handleSave(row, "projects")}
             onDelete={(row) => setDeleteRow({projects:{...row,resourceType:'Project'}})}
+            linkCol={"name"}
           />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
@@ -280,6 +281,7 @@ function ProjectList() {
             canAdd
             canEdit
             onSave={(row) => handleSave(row, "tools")}
+            linkCol="name"
           />
         </Grid>
       </Grid>
