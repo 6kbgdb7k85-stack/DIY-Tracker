@@ -13,6 +13,7 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import AlertWrapper from "./common/components/AlertWrapper";
+import Container from "@mui/material/Container";
 
 function App() {
   const [header, setHeader] = useState("");
@@ -115,83 +116,91 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            onClick={(e) => setMenuAnchor(e.currentTarget)}
-            color={"inherit"}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Menu
-            anchorEl={menuAnchor}
-            open={Boolean(menuAnchor)}
-            onClose={closeMenu}
-          >
-            <MenuItem
-              onClick={() => {
-                closeMenu();
-                setTheme(woodTheme);
-              }}
-            >
-              Use Wood Theme
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                closeMenu();
-                setTheme(metalTheme);
-              }}
-            >
-              Use Metal Theme
-            </MenuItem>
-          </Menu>
-          <Typography variant="h1" sx={{ flexGrow: 1 }}>
-            DIY Tracker
-          </Typography>
-          {user ? (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => {
-                localStorage.removeItem("token");
-                setUser(null)
-                navigate("/");
-              }}
-            >
-              Logout
-            </Button>
-          ) : (
-            <></>
-          )}
-        </Toolbar>
-      </AppBar>
-      <Grid container sx={{ alignItems: "center", justifyContent: "center" }}>
-        <Grid size={"grow"} />
-        <Grid size={{ md: 9, xs: 12 }}>
-          <Typography variant="h2" sx={{ flexGrow: 1, textAlign: "center" }}>
-            {header}
-          </Typography>
-        </Grid>
-        {returnToParentButton()}
-      </Grid>
-      {alerts.map((alert) => (
-        <AlertWrapper
-          key={"alert-" + alert.id}
-          severity={alert.severity}
-          message={alert.message}
-        />
-      ))}
-      <Outlet
-        context={{
-          setUser,
-          user,
-          sessionLoading,
-          session,
-          checkMe,
-          setHeader,
-          setAlerts,
+      <Container
+        maxWidth={"100%"}
+        sx={{
+          backgroundColor: theme.palette.background.default,
+          minHeight: "100dvh",
         }}
-      />
+      >
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton
+              onClick={(e) => setMenuAnchor(e.currentTarget)}
+              color={"inherit"}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              anchorEl={menuAnchor}
+              open={Boolean(menuAnchor)}
+              onClose={closeMenu}
+            >
+              <MenuItem
+                onClick={() => {
+                  closeMenu();
+                  setTheme(woodTheme);
+                }}
+              >
+                Use Wood Theme
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  closeMenu();
+                  setTheme(metalTheme);
+                }}
+              >
+                Use Metal Theme
+              </MenuItem>
+            </Menu>
+            <Typography variant="h1" sx={{ flexGrow: 1 }}>
+              DIY Tracker
+            </Typography>
+            {user ? (
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  setUser(null);
+                  navigate("/");
+                }}
+              >
+                Logout
+              </Button>
+            ) : (
+              <></>
+            )}
+          </Toolbar>
+        </AppBar>
+        <Grid container sx={{ alignItems: "center", justifyContent: "center" }}>
+          <Grid size={"grow"} />
+          <Grid size={{ md: 9, xs: 12 }}>
+            <Typography variant="h2" sx={{ flexGrow: 1, textAlign: "center" }}>
+              {header}
+            </Typography>
+          </Grid>
+          {returnToParentButton()}
+        </Grid>
+        {alerts.map((alert) => (
+          <AlertWrapper
+            key={"alert-" + alert.id}
+            severity={alert.severity}
+            message={alert.message}
+          />
+        ))}
+        <Outlet
+          context={{
+            setUser,
+            user,
+            sessionLoading,
+            session,
+            checkMe,
+            setHeader,
+            setAlerts,
+          }}
+        />
+      </Container>
     </ThemeProvider>
   );
 }

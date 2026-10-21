@@ -21,6 +21,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TableCellWrapper from "./TableCellWrapper";
 import { FieldTypes } from "../../constants/FieldTypes";
+import { useTheme } from "@emotion/react";
 
 /**
  * @param {Array} cols
@@ -61,6 +62,8 @@ export default function TableWrapper({
   const [open, setOpen] = useState({});
   const [editRows, setEditRows] = useState([]);
   const [rows, setRows] = useState([]);
+
+  const theme = useTheme()
 
   useEffect(() => {
     if (data) {
@@ -201,12 +204,12 @@ export default function TableWrapper({
       ) : (
         <>
           <TableContainer>
-            <Table stickyHeader aria-label="table">
-              <TableHead>
-                <TableRow>
+            <Table aria-label="table">
+              <TableHead sx={{borderBottom:`2px solid ${theme.palette.divider}`}}>
+                <TableRow >
                   {expandedTable ? <TableCell /> : <></>}
                   {cols.map((col) => (
-                    <TableCell key={col.id} align="center">
+                    <TableCell key={col.id} align="center" sx={{fontWeight:"bold"}}>
                       {col.label}
                     </TableCell>
                   ))}
