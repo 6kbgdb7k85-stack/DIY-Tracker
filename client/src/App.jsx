@@ -14,6 +14,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import AlertWrapper from "./common/components/AlertWrapper";
 import Container from "@mui/material/Container";
+import Box from "@mui/material/Box";
 
 function App() {
   const [header, setHeader] = useState("");
@@ -121,6 +122,9 @@ function App() {
         sx={{
           backgroundColor: theme.palette.background.default,
           minHeight: "100dvh",
+          padding: "0 !important",
+          display: "flex",
+          flexDirection:"column"
         }}
       >
         <AppBar position="static">
@@ -189,17 +193,19 @@ function App() {
             message={alert.message}
           />
         ))}
-        <Outlet
-          context={{
-            setUser,
-            user,
-            sessionLoading,
-            session,
-            checkMe,
-            setHeader,
-            setAlerts,
-          }}
-        />
+        <Box sx={{flexGrow:1,padding:".5rem",overflow:"scroll"}}>
+          <Outlet
+            context={{
+              setUser,
+              user,
+              sessionLoading,
+              session,
+              checkMe,
+              setHeader,
+              setAlerts,
+            }}
+          />
+        </Box>
       </Container>
     </ThemeProvider>
   );
