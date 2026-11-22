@@ -11,6 +11,7 @@ import Home from "./components/Home.jsx";
 import ToolView from "./components/tools/ToolView.jsx";
 import ProjectView from "./components/projects/ProjectView.jsx";
 import TaskView from "./components/tasks/TaskView.jsx";
+import "./assets/index.css"
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
